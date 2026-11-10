@@ -30,5 +30,11 @@ def send_telegram(text: str = "", confirmed: bool = False) -> dict[str, Any]:
         response.raise_for_status()
         return {"tool": "send_telegram", "status": "sent"}
     except Exception as exc:
-        return err("send_telegram", exc)
+        result = err("send_telegram", exc)
+        # requests puts the full URL (which contains the bot token) into HTTPError messages;
+        # never let the token reach transcripts, run JSON or the UI.
+        token = os.getenv("TELEGRAM_BOT_TOKEN")
+        if token:
+            result["message"] = result["message"].replace(token, "***")
+        return result
 

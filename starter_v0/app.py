@@ -25,7 +25,8 @@ import streamlit as st
 
 from chat import ARTIFACTS_DIR, ROOT, now_iso, run_model_tool_loop, safe_slug, trim_history, write_transcript
 from providers import make_provider
-from tools import load_tool_declarations, to_openai_tools
+from tools import TOOL_FUNCTIONS, load_tool_declarations, to_openai_tools
+from tools.send.tool import send_telegram
 from versioning import artifact_version_dict, build_artifact_version
 
 APP_NAME = "Dori Research"
@@ -194,6 +195,12 @@ header[data-testid="stHeader"]{background:transparent}
 [data-testid="stSidebar"] [data-testid="stExpander"] details{background:rgba(255,255,255,.7) !important; border-style:solid !important; border-color:var(--blue-soft) !important}
 [data-testid="stSidebar"] [data-testid="stExpander"] summary{color:var(--navy) !important}
 .stSpinner > div{color:var(--blue-deep) !important; font-weight:700}
+
+/* ---------- send confirmation card ---------- */
+.st-key-sendcard{background:var(--sun-soft); border:2px solid var(--sun); border-radius:22px; padding:16px 18px 6px; margin:4px 0 14px;
+  box-shadow:0 10px 24px -18px rgba(160,122,18,.7)}
+.send-title{font-family:'Baloo 2',sans-serif !important; font-weight:700; font-size:1.08rem; color:var(--navy); margin:0}
+.st-key-sendcard textarea{background:var(--white) !important; border-radius:14px !important}
 </style>
 """
 
@@ -243,6 +250,62 @@ def load_runtime() -> dict:
         "provider": make_provider(PROVIDER),
         "artifact": build_artifact_version(VERSION, prompt_path, tools_path),
     }
+
+
+# ---------------------------------------------------------------- UI-level send confirmation
+
+def ui_gated_send(text: str = "", confirmed: bool = False) -> dict:
+    """Replaces the `send` tool inside the UI. The model can only prepare a draft: nothing is
+    posted to Telegram until the user presses "Xác nhận gửi" on the confirmation card."""
+    if not (confirmed is True or (isinstance(confirmed, str) and confirmed.strip().lower() == "true")):
+        return send_telegram(text=text, confirmed=False)  # same needs_confirmation answer as the real tool
+    if not (text or "").strip():
+        return {"tool": "send_telegram", "error": "ValueError", "message": "Nội dung bản tin đang trống."}
+    st.session_state.pending_send = {"text": text, "created_at": datetime.now().strftime("%H%M%S%f")}
+    return {
+        "tool": "send_telegram",
+        "status": "awaiting_ui_confirmation",
+        "message": ("CHƯA GỬI. Một thẻ bản nháp vừa hiện ngay bên dưới câu trả lời của bạn trong khung chat Dori. "
+                    "Tin chỉ được đăng khi người dùng bấm nút 'Xác nhận gửi' trên thẻ đó (không phải trong ứng dụng Telegram). "
+                    "Hãy nói ngắn gọn rằng bản nháp đã sẵn sàng ở bên dưới để người dùng kiểm tra, chỉnh sửa và bấm 'Xác nhận gửi'. "
+                    "Không nói rằng tin đã được gửi."),
+    }
+
+
+TOOL_FUNCTIONS["send"] = ui_gated_send  # chat.py looks tools up in this dict at call time
+
+
+def record_ui_action(action: dict, chat_text: str) -> None:
+    """Show the outcome in the chat and attach it to the latest turn of the transcript."""
+    st.session_state.display.append({"role": "assistant", "content": chat_text})
+    st.session_state.history.append({"role": "assistant", "content": chat_text})
+    transcript = st.session_state.transcript
+    if transcript["turns"]:
+        transcript["turns"][-1].setdefault("ui_actions", []).append({"at": now_iso(), "chat_text": chat_text, **action})
+        write_transcript(st.session_state.transcript_path, transcript)
+    st.session_state.pending_send = None
+
+
+def render_send_card(pending: dict) -> None:
+    with st.container(key="sendcard"):
+        st.markdown('<p class="send-title">💌 Bản tin đang chờ bạn xác nhận</p>'
+                    '<p class="tiny">Tin chỉ được đăng lên Telegram khi bạn bấm “Xác nhận gửi”. '
+                    'Bạn có thể chỉnh sửa nội dung trước khi gửi.</p>', unsafe_allow_html=True)
+        draft = st.text_area("Nội dung bản tin", value=pending["text"], height=180,
+                             key=f"draft_{pending['created_at']}", label_visibility="collapsed")
+        col_ok, col_cancel = st.columns(2)
+        if col_ok.button("Xác nhận gửi", type="primary", use_container_width=True, key="send_ok"):
+            result = send_telegram(text=draft, confirmed=True)
+            if result.get("status") == "sent":
+                chat_text = "✅ Đã đăng bản tin lên Telegram."
+            else:
+                chat_text = f"Gửi không thành công: `{result.get('error')}: {result.get('message')}`"
+            record_ui_action({"action": "send_confirmed", "text": draft, "edited": draft != pending["text"],
+                              "result": result}, chat_text)
+            st.rerun()
+        if col_cancel.button("Hủy, không gửi", use_container_width=True, key="send_cancel"):
+            record_ui_action({"action": "send_cancelled", "text": pending["text"]}, "Đã hủy. Bản tin không được gửi.")
+            st.rerun()
 
 
 # ---------------------------------------------------------------- per-browser session id
@@ -303,6 +366,7 @@ def assistant_display(turn: dict) -> tuple[str, bool]:
 def start_new_conversation(runtime: dict, sid: str) -> None:
     st.session_state.history = []
     st.session_state.display = []
+    st.session_state.pending_send = None
     st.session_state.transcript_path, st.session_state.transcript = new_transcript(runtime, sid)
 
 
@@ -315,7 +379,11 @@ def open_conversation(path: Path) -> None:
         display.append({"role": "assistant", "content": text, "rounds": turn.get("rounds", []), "awaiting": awaiting})
         if turn.get("status") != "provider_error":
             history += [{"role": "user", "content": turn.get("user", "")}, {"role": "assistant", "content": turn.get("assistant_text") or ""}]
+        for action in turn.get("ui_actions", []):
+            display.append({"role": "assistant", "content": action.get("chat_text", "")})
+            history.append({"role": "assistant", "content": action.get("chat_text", "")})
     st.session_state.display = display
+    st.session_state.pending_send = None
     st.session_state.history = history
     st.session_state.transcript_path = path
     st.session_state.transcript = data
@@ -444,6 +512,9 @@ if not st.session_state.display:
 
 for message in st.session_state.display:
     render_message(message)
+
+if st.session_state.get("pending_send"):
+    render_send_card(st.session_state.pending_send)
 
 user_text = st.chat_input("Nhập yêu cầu tra cứu, ví dụ: repo pytorch/pytorch có bao nhiêu sao?") or st.session_state.pop("pending", None)
 

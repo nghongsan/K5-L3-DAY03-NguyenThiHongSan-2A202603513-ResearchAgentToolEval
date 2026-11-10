@@ -116,6 +116,19 @@ def test_send_string_false_is_not_treated_as_confirmation(monkeypatch, fake_http
     assert calls == []
 
 
+def test_send_http_error_does_not_leak_bot_token(monkeypatch, fake_http) -> None:
+    # Regression: requests' HTTPError message contains the request URL .../bot<TOKEN>/sendMessage,
+    # which used to be copied verbatim into the error dict (and from there into transcripts / the UI).
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRET-token")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "-10042")
+    fake_http(requests.HTTPError(
+        "400 Client Error: Bad Request for url: https://api.telegram.org/bot123456:SECRET-token/sendMessage"))
+    result = send(text="x", confirmed=True)
+    assert result["error"] == "HTTPError"
+    assert "SECRET-token" not in result["message"]
+    assert "bot***/sendMessage" in result["message"]
+
+
 # ---------------- lookup ----------------
 
 def test_lookup_without_timeframe_omits_time_range(monkeypatch, fake_http) -> None:

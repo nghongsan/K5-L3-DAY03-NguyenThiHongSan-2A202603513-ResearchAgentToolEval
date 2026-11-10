@@ -162,11 +162,11 @@ Transcript của các vòng thử trước (v6/v9 khi còn khám phá, cùng phi
 
 | Bonus | Evidence File | What Worked | Risk / Guardrail |
 |---|---|---|---|
-| send (Telegram) | `transcripts/v3_openai_20261110T141608046533.transcript.json`, `runs/v3_B_group_…` (G05, G09) | Luôn `clarify(yes_no)` trước khi gửi, kể cả khi user ép "khỏi hỏi" (G05); chỉ gửi sau "Có" | Tool chỉ chấp nhận `confirmed is True` hoặc chuỗi `"true"` (sửa bug, xem dưới). Chưa có token Telegram thật nên chưa có bằng chứng gửi thành công |
+| send (Telegram) | `transcripts/v3_openai_20261110T141608046533.transcript.json`, `runs/v3_B_group_…` (G05, G09) | Luôn `clarify(yes_no)` trước khi gửi, kể cả khi user ép "khỏi hỏi" (G05); chỉ gửi sau "Có". **Trên UI có thêm lớp xác nhận ở tầng code:** khi model gọi `send(confirmed=true)`, app chỉ hiện thẻ bản nháp (sửa được) với nút **Xác nhận gửi** / **Hủy**; không có request nào tới Telegram cho tới khi người dùng bấm nút. Đã kiểm thử với model thật + Telegram giả lập: 0 request trước khi bấm, đúng 1 request với nội dung đã sửa sau khi bấm, 0 request khi bấm Hủy | Ba lớp bảo vệ: prompt (hỏi yes_no) → cờ `confirmed` của tool (chỉ nhận `True`/`"true"`, sửa bug #1) → nút bấm trên UI. Lỗi gửi không còn làm lộ bot token (sửa bug #5). Chưa có token Telegram thật nên chưa có bằng chứng gửi thành công lên channel |
 | arXiv/company policy | `runs/v3_B_extension_openai_20261110T141504977828.json` | Extension 1.00: chọn đúng `policy_area`, request ghép gọi đủ tool | Kết quả policy được tách `facts` và `untrusted_text`; dòng giống mệnh lệnh trong tài liệu bị đưa vào `untrusted_text` (có test) |
 | UI | `app.py`, `.streamlit/config.toml` | Giao diện "Dori Research" với linh vật robot Dori và bảng màu lấy từ linh vật (xanh periwinkle, điểm nhấn vàng), lời văn trang trọng; **lịch sử trò chuyện** (mở lại và tiếp tục cuộc cũ); thẻ câu hỏi gợi ý; nhãn "Dori cần thêm thông tin" khi agent hỏi lại; mỗi tool call hiện kèm icon, args và kết quả; chế độ demo tự ẩn tool thiếu key; ghi transcript | Lịch sử tách theo từng trình duyệt (mã `sid` trên URL), nên người dùng chung link tunnel không xem được hội thoại của nhau. Lỗi provider hoặc tool hiện ngay trên trang, không làm sập app. Tunnel là link tạm |
 | 4 tool mới (wiki, hn_search, github_repo, rss) | `tools/<tên>/`, `runs/v3_B_group_…` | Group 11/12; không regression trên base hoặc extension khi thêm (v3) | Không cần key; validate input trước khi gọi mạng; luôn trả error dict. `github_repo` không token chỉ được 60 request/giờ, nên đặt `GITHUB_TOKEN` khi demo |
-| Tool unit tests (`tests/`) | `pytest`: **115 passed, 0 failed, 0 skipped** | 33 test trong `test_tools_todo.py`: 14 stub TODO + 6 test thêm cho tool cũ (gồm 4 regression) + 13 test cho 4 tool mới (≥3 mỗi tool) | Offline, mock HTTP bằng `fake_http` |
+| Tool unit tests (`tests/`) | `pytest`: **116 passed, 0 failed, 0 skipped** | 34 test trong `test_tools_todo.py`: 14 stub TODO + 7 test thêm cho tool cũ (gồm 5 regression) + 13 test cho 4 tool mới (≥3 mỗi tool) | Offline, mock HTTP bằng `fake_http` |
 
 **Bug tìm được trong tool có sẵn** (mỗi bug có regression test, đã sửa):
 
@@ -176,6 +176,7 @@ Transcript của các vòng thử trước (v6/v9 khi còn khám phá, cùng phi
 | 2 | `timeline`, `social_search` | `items[:int(limit)]` với `limit=-1` âm thầm bỏ tweet cuối | `limit=-1` | `clamp_int` về 1..100 (`test_timeline_negative_limit_does_not_drop_last_tweet`) |
 | 3 | `timeline`, `social_search` | `int("five")` raise, cả request thất bại | `limit="five"` | Dùng mặc định 5 (`test_timeline_non_numeric_limit_uses_default`) |
 | 4 | `format` | `section=""` hoặc `None` sinh heading rỗng `## ` hoặc `## None` | item có `section: null` | Fallback "Tổng hợp" / "Tin chính" (`test_format_empty_section_falls_back_to_default_heading`) |
+| 5 | `send` | **Lộ bot token**: khi Telegram trả lỗi (sai chat ID, bot chưa là admin…), thông báo `HTTPError` của `requests` chứa nguyên URL `…/bot<TOKEN>/sendMessage` và được ghi vào transcript, run JSON, UI | Bất kỳ lần gửi lỗi nào | Che token thành `***` trong error dict (`test_send_http_error_does_not_leak_bot_token`) |
 
 **Ví dụ unit test bắt được mà eval không bắt được:** bug #1. Eval chỉ so sánh *args model gửi*. Model gửi `confirmed="false"` bị eval chấm là sai arg, nhưng eval không biết tool sẽ **thật sự gửi** tin nhắn. Chỉ unit test của code tool mới thấy được hậu quả đó.
 
