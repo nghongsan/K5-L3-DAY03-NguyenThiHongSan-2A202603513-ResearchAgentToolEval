@@ -6,7 +6,7 @@
 
 ## 1. Thông tin nhóm
 
-- Tên nhóm: *(điền, dùng cho tên repo `K5-L3A/L3B-DAY03-TenNhom-ResearchAgentToolEval`)*
+- Tên nhóm: `NguyenThiHongSan-2A202603513` · Lớp: L3A · Repo: `K5-L3A-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval`
 - Thành viên và phân công: xem [TEAM.md](../../TEAM.md). Nguyễn Thị Hồng San (2A202603513), Nguyễn Thị Hồng Hạnh (2A202603537), Hoàng Lam Minh (2A202603566).
 - Provider/model dùng cho v0–v3: `openai` / `gpt-4o-mini`, temperature 0. Bản cuối: **`v3+p5646cdeaa4b7+t9a4290abc029`**.
 
