@@ -1,0 +1,37 @@
+{
+  "transcript_id": "v3_openai_ui_20261110T215518905537",
+  "version": "v3",
+  "artifact_version": "v3+p5646cdeaa4b7+t9a4290abc029",
+  "prompt_hash": "5646cdeaa4b70aceb187841a87c0b9562bbdac4c82019dbe31930b42cb276a96",
+  "tools_hash": "9a4290abc0291656cf846e9025505c45edd6f5d5b7dfe95b544210f09ea99206",
+  "provider": "openai",
+  "model": "gpt-4o-mini",
+  "system_prompt": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/system_prompt.md",
+  "tools": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/tools.yaml",
+  "interface": "streamlit",
+  "client_hash": "5cb9175f13d2d9a2bf073b7d",
+  "title": "San có cute hong?",
+  "history_window": 5,
+  "max_tool_rounds": 4,
+  "created_at": "2026-11-10T21:55:18",
+  "updated_at": "2026-11-10T21:55:20",
+  "turns": [
+    {
+      "turn_index": 1,
+      "started_at": "2026-11-10T21:55:18",
+      "user": "San có cute hong?",
+      "status": "answered",
+      "assistant_text": "Mình là một trợ lý nghiên cứu, không có cảm xúc hay ngoại hình. Nhưng nếu bạn cần thông tin hay giúp đỡ về một chủ đề nào đó, mình rất sẵn lòng hỗ trợ!",
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": "Mình là một trợ lý nghiên cứu, không có cảm xúc hay ngoại hình. Nhưng nếu bạn cần thông tin hay giúp đỡ về một chủ đề nào đó, mình rất sẵn lòng hỗ trợ!",
+          "tool_calls": [],
+          "tool_results": []
+        }
+      ],
+      "tool_events": [],
+      "ended_at": "2026-11-10T21:55:20"
+    }
+  ]
+}
