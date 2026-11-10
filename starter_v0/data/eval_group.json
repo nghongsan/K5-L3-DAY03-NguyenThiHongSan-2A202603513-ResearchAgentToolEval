@@ -1,5 +1,5 @@
 {
-  "dataset_id": "day04_v2_research_group",
+  "dataset_id": "day03_v2_research_group",
   "dataset_role": "group",
   "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
   "allowed_failure_types": [
@@ -278,57 +278,6 @@
         "skill": "multiturn_correction_rss_limit",
         "difficulty": "easy",
         "what_it_tests": "Giữ feed_url từ lượt trước, áp dụng số lượng mới ở lượt sau (limit=3)."
-      }
-    },
-    {
-      "id": "G11_missing_feed_url",
-      "phase": "B",
-      "query": "Tóm tắt 3 bài mới nhất từ feed giúp mình",
-      "failure_type": "missing_info",
-      "expect": {
-        "tool_calls": [
-          {
-            "name": "clarify",
-            "args": {
-              "response_type": "text"
-            }
-          }
-        ]
-      },
-      "metadata": {
-        "skill": "missing_info_generic_source",
-        "difficulty": "medium",
-        "what_it_tests": "Nói 'feed' nhưng không có URL → clarify xin URL, KHÔNG tự đoán feed (lỗi phát hiện khi chat live trong vòng thử nghiệm: agent tự chọn news.ycombinator.com/rss)."
-      }
-    },
-    {
-      "id": "G12_context_does_not_license_guessing_url",
-      "phase": "B",
-      "turns": [
-        {
-          "role": "user",
-          "content": "Dân dev trên Hacker News đang bàn gì về AI agents? Lấy 3 bài nổi bật nhất"
-        },
-        {
-          "role": "user",
-          "content": "Tóm tắt 3 bài mới nhất từ feed giúp mình"
-        }
-      ],
-      "failure_type": "missing_info",
-      "expect": {
-        "tool_calls": [
-          {
-            "name": "clarify",
-            "args": {
-              "response_type": "text"
-            }
-          }
-        ]
-      },
-      "metadata": {
-        "skill": "missing_info_context_guess",
-        "difficulty": "hard",
-        "what_it_tests": "Tái hiện lỗi chat live trong vòng thử nghiệm: ngữ cảnh trước nói về HN nên agent tự đoán URL feed (news.ycombinator.com/rss). Không có URL feed → clarify, không suy ra URL từ ngữ cảnh."
       }
     }
   ]
