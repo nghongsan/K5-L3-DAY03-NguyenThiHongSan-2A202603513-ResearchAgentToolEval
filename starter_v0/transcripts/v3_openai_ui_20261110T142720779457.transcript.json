@@ -1,0 +1,35 @@
+{
+  "transcript_id": "v3_openai_ui_20261110T142720779457",
+  "version": "v3",
+  "artifact_version": "v3+pff731a31ebbb+t6ddb47173a71",
+  "prompt_hash": "ff731a31ebbbcdb8a83d543826ecc2cc1ae29c76581a21d018d944efb2d6da03",
+  "tools_hash": "6ddb47173a716a9d83f95cb0a601d6589a34f12c5bbc6449a5292d7948c5f583",
+  "provider": "openai",
+  "model": "gpt-4o-mini",
+  "system_prompt": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/system_prompt.md",
+  "tools": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/tools.yaml",
+  "interface": "streamlit",
+  "history_window": 5,
+  "max_tool_rounds": 4,
+  "created_at": "2026-11-10T14:27:20",
+  "updated_at": "2026-11-10T14:30:33",
+  "turns": [
+    {
+      "turn_index": 1,
+      "started_at": "2026-11-10T14:30:31",
+      "user": "Hôm nay Hà Nội bao nhiêu độ",
+      "status": "answered",
+      "assistant_text": "Tôi không thể cung cấp thông tin thời tiết trực tiếp. Bạn có thể kiểm tra thời tiết Hà Nội trên các trang web hoặc ứng dụng thời tiết như Weather.com, AccuWeather hoặc ứng dụng thời tiết trên điện thoại của bạn.",
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": "Tôi không thể cung cấp thông tin thời tiết trực tiếp. Bạn có thể kiểm tra thời tiết Hà Nội trên các trang web hoặc ứng dụng thời tiết như Weather.com, AccuWeather hoặc ứng dụng thời tiết trên điện thoại của bạn.",
+          "tool_calls": [],
+          "tool_results": []
+        }
+      ],
+      "tool_events": [],
+      "ended_at": "2026-11-10T14:30:33"
+    }
+  ]
+}

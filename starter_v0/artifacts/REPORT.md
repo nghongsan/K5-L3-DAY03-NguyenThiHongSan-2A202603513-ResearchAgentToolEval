@@ -16,7 +16,7 @@
 
 ## A1. Agent này làm được gì
 
-**Mochi Research 🐰** là research agent tiếng Việt. Agent tìm tin trên web, đọc tweet theo tài khoản hoặc chủ đề, đọc URL, RSS feed và paper arXiv, tra Wikipedia, Hacker News, GitHub repo và policy nội bộ, rồi tổng hợp thành digest. Khi thiếu thông tin (tài khoản, link, repo nào), agent **hỏi lại** thay vì đoán. Agent **luôn xin xác nhận** trước khi đăng lên Telegram, và từ chối nhẹ nhàng các yêu cầu ngoài phạm vi research (giải toán, viết code).
+**Dori Research 🐰** là research agent tiếng Việt. Agent tìm tin trên web, đọc tweet theo tài khoản hoặc chủ đề, đọc URL, RSS feed và paper arXiv, tra Wikipedia, Hacker News, GitHub repo và policy nội bộ, rồi tổng hợp thành digest. Khi thiếu thông tin (tài khoản, link, repo nào), agent **hỏi lại** thay vì đoán. Agent **luôn xin xác nhận** trước khi đăng lên Telegram, và từ chối nhẹ nhàng các yêu cầu ngoài phạm vi research (giải toán, viết code).
 
 **Link dùng thử (deploy):**
 
@@ -164,7 +164,7 @@ Transcript của các vòng thử trước (v6/v9 khi còn khám phá, cùng phi
 |---|---|---|---|
 | send (Telegram) | `transcripts/v3_openai_20261110T141608046533.transcript.json`, `runs/v3_B_group_…` (G05, G09) | Luôn `clarify(yes_no)` trước khi gửi, kể cả khi user ép "khỏi hỏi" (G05); chỉ gửi sau "Có" | Tool chỉ chấp nhận `confirmed is True` hoặc chuỗi `"true"` (sửa bug, xem dưới). Chưa có token Telegram thật nên chưa có bằng chứng gửi thành công |
 | arXiv/company policy | `runs/v3_B_extension_openai_20261110T141504977828.json` | Extension 1.00: chọn đúng `policy_area`, request ghép gọi đủ tool | Kết quả policy được tách `facts` và `untrusted_text`; dòng giống mệnh lệnh trong tài liệu bị đưa vào `untrusted_text` (có test) |
-| UI | `app.py`, `.streamlit/config.toml` | Giao diện "Mochi" pastel; thẻ câu hỏi mẫu; mỗi tool call hiện kèm icon, args và kết quả; chế độ demo tự ẩn tool thiếu key; ghi transcript | Lỗi provider hoặc tool hiện ngay trên trang, không làm sập app. Tunnel là link tạm |
+| UI | `app.py`, `.streamlit/config.toml` | Giao diện "Dori Research" pastel, lời văn trang trọng; **lịch sử trò chuyện** (mở lại và tiếp tục cuộc cũ); thẻ câu hỏi gợi ý; nhãn "Dori cần thêm thông tin" khi agent hỏi lại; mỗi tool call hiện kèm icon, args và kết quả; chế độ demo tự ẩn tool thiếu key; ghi transcript | Lịch sử tách theo từng trình duyệt (mã `sid` trên URL), nên người dùng chung link tunnel không xem được hội thoại của nhau. Lỗi provider hoặc tool hiện ngay trên trang, không làm sập app. Tunnel là link tạm |
 | 4 tool mới (wiki, hn_search, github_repo, rss) | `tools/<tên>/`, `runs/v3_B_group_…` | Group 11/12; không regression trên base hoặc extension khi thêm (v3) | Không cần key; validate input trước khi gọi mạng; luôn trả error dict. `github_repo` không token chỉ được 60 request/giờ, nên đặt `GITHUB_TOKEN` khi demo |
 | Tool unit tests (`tests/`) | `pytest`: **115 passed, 0 failed, 0 skipped** | 33 test trong `test_tools_todo.py`: 14 stub TODO + 6 test thêm cho tool cũ (gồm 4 regression) + 13 test cho 4 tool mới (≥3 mỗi tool) | Offline, mock HTTP bằng `fake_http` |
 
