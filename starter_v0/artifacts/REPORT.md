@@ -8,7 +8,7 @@
 
 - Team:
 - Members:
-- Provider/model:
+- Provider/model: openai / gpt-4o-mini
 
 ---
 
@@ -54,7 +54,7 @@ Fill from `artifacts/version_log.csv` and `runs/*.json`.
 
 | Version | Changed Artifact | Hypothesis | Metric Before | Metric After | Run File |
 |---|---|---|---:|---:|---|
-| v0 | baseline |  |  |  |  |
+| v0 | baseline | Đo hành vi starter trước khi sửa | – | 0.70 (routing 0.75, args 0.70, multiturn 1.00) | `runs/v0_B_base_openai_20261110T102926436504.json` |
 | v1 |  |  |  |  |  |
 | v2 |  |  |  |  |  |
 | v3 |  |  |  |  |  |
@@ -65,7 +65,12 @@ Use actual failures from `results[*].result.failures`.
 
 | Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| R08_out_of_scope | out_of_scope | `send(text="Nguyên hàm của x^2 là x^3/3 + C")` | Câu toán ngoài phạm vi nhưng model dùng `send` làm kênh trả lời | (v2) ranh giới phạm vi trong prompt, `send` không phải kênh trả lời |
+| R14_out_of_scope_coding | out_of_scope | `send(text=<code Fibonacci>)` | Câu coding ngoài phạm vi, giống R08 | (v2) như R08 |
+| R10_missing_handle | missing_info | `timeline(screenname="sama")` | Thiếu handle nhưng đoán Sam Altman, vì prompt bảo *"pick a well-known account like Sam Altman"* | (v1) bỏ chỉ dẫn đoán, thiếu thông tin thì `clarify` |
+| R11_missing_url | missing_info | `fetch(url="https://example.com/article")` | Bịa URL, vì prompt bảo *"assume a likely URL"* | (v1) như R10 |
+| R12_confirm_before_send | wrong_boundary | `send(text="Bản tin này đã được đăng lên Telegram.")` | Gửi luôn không hỏi, vì prompt bảo *"just go ahead and do it"*. Tool tự chặn (`needs_confirmation`) nên không gửi thật. | (v1) hành động gửi phải `clarify(yes_no)` trước |
+| R13_parallel_web_and_tweets | wrong_tool (quan sát: wrong_arg_value) | `lookup(query="AI news", timeframe="day")`, `social_search(query="AI")` | Chọn đúng 2 tool nhưng thiếu `topic="news"` và thêm "news" vào query | (v3) quy ước args `lookup` trong tools.yaml |
 
 ## B3. Team Eval Cases
 
