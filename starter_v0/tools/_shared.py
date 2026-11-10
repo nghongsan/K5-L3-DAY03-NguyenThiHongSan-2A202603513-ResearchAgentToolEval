@@ -50,3 +50,33 @@ def clamp_int(value: Any, default: int, lo: int, hi: int) -> int:
 
 
 USER_AGENT = "AI20k-Day03-Research-Agent/1.0 (educational lab)"
+
+
+def resolve_host(host: str) -> list[str]:
+    """All IP addresses a hostname resolves to (separate function so tests can stub DNS)."""
+    import socket
+    return sorted({info[4][0] for info in socket.getaddrinfo(host, None)})
+
+
+def check_public_url(url: str) -> str:
+    """Raise ValueError unless `url` is http(s) and every address it resolves to is public.
+
+    Blocks SSRF: a user of the public demo must not be able to make the agent fetch
+    localhost, the LAN (router admin pages), link-local cloud metadata (169.254.x.x), etc.
+    """
+    import ipaddress
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        raise ValueError("feed_url must be an http(s) URL")
+    host = parsed.hostname
+    try:
+        addresses = [str(ipaddress.ip_address(host))]
+    except ValueError:
+        addresses = resolve_host(host)
+    if not addresses:
+        raise ValueError(f"cannot resolve host {host}")
+    for address in addresses:
+        ip = ipaddress.ip_address(address)
+        if not ip.is_global or ip.is_multicast:
+            raise ValueError(f"blocked non-public address for {host}")
+    return url

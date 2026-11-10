@@ -9,7 +9,6 @@
   "system_prompt": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/system_prompt.md",
   "tools": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/tools.yaml",
   "interface": "streamlit",
-  "client_id": "4644b0c87f3b4522",
   "title": "Tổng thống Mỹ hiện tại là ai?",
   "history_window": 5,
   "max_tool_rounds": 4,
@@ -513,5 +512,6 @@
       ],
       "ended_at": "2026-11-10T20:44:50"
     }
-  ]
+  ],
+  "client_hash": "0dc01be1bde9404b11b874fe"
 }

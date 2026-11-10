@@ -20,9 +20,9 @@
 
 **Link dùng thử (deploy):**
 
-> Chạy `cd starter_v0 && source .venv/bin/activate && streamlit run app.py` rồi `cloudflared tunnel --url http://localhost:8501`, sau đó dán link `https://….trycloudflare.com` vào đây. Link chỉ sống khi lệnh còn chạy.
+> Chạy `cd starter_v0 && source .venv/bin/activate && streamlit run app.py --server.port 8501` rồi `cloudflared tunnel --url http://localhost:8501`, sau đó dán link `https://….trycloudflare.com` vào đây. Link chỉ sống khi lệnh còn chạy.
 >
-> URL: *(dán link tunnel khi demo)*
+> URL: https://harvard-lane-simply-foundations.trycloudflare.com (link tạm của Cloudflare Tunnel, chỉ sống khi máy nhóm đang chạy app và tunnel)
 
 ## A2. Tool agent có
 

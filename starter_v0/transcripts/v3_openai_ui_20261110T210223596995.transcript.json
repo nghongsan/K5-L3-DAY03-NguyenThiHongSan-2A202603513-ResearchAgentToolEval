@@ -9,7 +9,6 @@
   "system_prompt": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/system_prompt.md",
   "tools": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/tools.yaml",
   "interface": "streamlit",
-  "client_id": "39186a116d4d4829",
   "title": "Nhờ Dori đăng một tin thử nghiệm có nhãn [San xinh đẹp lắm]",
   "history_window": 5,
   "max_tool_rounds": 4,
@@ -141,5 +140,6 @@
         }
       ]
     }
-  ]
+  ],
+  "client_hash": "2f7056b5ce4671a2ff022b50"
 }

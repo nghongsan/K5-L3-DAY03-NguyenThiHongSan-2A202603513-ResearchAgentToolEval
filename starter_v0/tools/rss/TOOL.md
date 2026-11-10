@@ -13,5 +13,5 @@ side_effect: false
 Đọc các bài mới nhất từ MỘT feed RSS 2.0 hoặc Atom khi user đưa URL feed
 (thường kết thúc bằng `/feed`, `/rss`, `.xml`, `.atom`). Không cần API key.
 
-Guardrails: URL không phải http(s) → error dict, không gọi mạng; XML lỗi → error dict;
+Guardrails: URL không phải http(s) → error dict, không gọi mạng; chặn SSRF: URL (kể cả sau mỗi lần redirect) trỏ tới localhost, mạng LAN, 169.254.x.x… → error dict, không gọi mạng; XML lỗi → error dict;
 `limit` ép về 1..20.

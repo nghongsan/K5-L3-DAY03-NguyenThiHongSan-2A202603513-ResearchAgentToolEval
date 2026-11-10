@@ -17,6 +17,7 @@ from __future__ import annotations
 import html
 import json
 import os
+import hashlib
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -35,6 +36,9 @@ VERSION = os.getenv("APP_VERSION", "v3")
 MODEL = os.getenv("APP_MODEL") or None
 HISTORY_WINDOW = 5
 MAX_TOOL_ROUNDS = 4
+# Abuse/cost limits for the public demo link (override with env vars).
+MAX_TURNS_PER_SESSION = int(os.getenv("APP_MAX_TURNS_PER_SESSION", "25"))
+MAX_TURNS_PER_HOUR = int(os.getenv("APP_MAX_TURNS_PER_HOUR", "150"))
 TRANSCRIPTS_DIR = ROOT / "transcripts"
 TOOLS_DIR = ROOT / "tools"
 
@@ -241,6 +245,8 @@ def load_runtime() -> dict:
     all_declarations = load_tool_declarations(tools_path)
     # Demo mode: hide tools whose API keys are not configured, so the agent never calls them.
     disabled = {d["name"]: missing_env(d["name"]) for d in all_declarations}
+    if os.getenv("APP_DISABLE_SEND"):  # e.g. while the public tunnel is open: nobody can post to Telegram
+        disabled["send"] = ["APP_DISABLE_SEND"]
     disabled = {name: envs for name, envs in disabled.items() if envs}
     declarations = [d for d in all_declarations if d["name"] not in disabled]
     system_prompt = prompt_path.read_text(encoding="utf-8")
@@ -339,7 +345,7 @@ def new_transcript(runtime: dict, sid: str) -> tuple[Path, dict]:
         "system_prompt": str(ARTIFACTS_DIR / "system_prompt.md"),
         "tools": str(ARTIFACTS_DIR / "tools.yaml"),
         "interface": "streamlit",
-        "client_id": sid,
+        "client_hash": client_hash(sid),
         "title": "",
         "history_window": HISTORY_WINDOW,
         "max_tool_rounds": MAX_TOOL_ROUNDS,
@@ -350,6 +356,32 @@ def new_transcript(runtime: dict, sid: str) -> tuple[Path, dict]:
     return TRANSCRIPTS_DIR / f"{transcript_id}.transcript.json", data
 
 
+def client_hash(sid: str) -> str:
+    """Only a one-way hash of the browser's sid is stored, so transcripts committed to the repo
+    cannot be used to open someone's history (?sid=...) on the public demo."""
+    return hashlib.sha256(f"dori-history:{sid}".encode()).hexdigest()[:24]
+
+
+def turns_in_last_hour() -> int:
+    """Questions asked through the UI by everyone in the last hour (global cost guard)."""
+    cutoff = datetime.now().timestamp() - 3600
+    count = 0
+    for path in TRANSCRIPTS_DIR.glob("*_ui_*.transcript.json"):
+        if path.stat().st_mtime < cutoff:
+            continue
+        try:
+            turns = json.loads(path.read_text(encoding="utf-8")).get("turns", [])
+        except (OSError, ValueError):
+            continue
+        for turn in turns:
+            try:
+                if datetime.fromisoformat(turn.get("started_at", "")).timestamp() >= cutoff:
+                    count += 1
+            except ValueError:
+                pass
+    return count
+
+
 def list_history(sid: str) -> list[dict]:
     items = []
     for path in TRANSCRIPTS_DIR.glob("*_ui_*.transcript.json"):
@@ -357,7 +389,7 @@ def list_history(sid: str) -> list[dict]:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             continue
-        if data.get("client_id") != sid or not data.get("turns"):
+        if data.get("client_hash") != client_hash(sid) or not data.get("turns"):
             continue
         title = data.get("title") or data["turns"][0].get("user", "")
         items.append({"path": path, "title": title, "updated_at": data.get("updated_at", "")})
@@ -525,6 +557,12 @@ if st.session_state.get("pending_send"):
     render_send_card(st.session_state.pending_send)
 
 user_text = st.chat_input("Nhập yêu cầu tra cứu, ví dụ: repo pytorch/pytorch có bao nhiêu sao?") or st.session_state.pop("pending", None)
+
+if user_text:
+    st.session_state.turn_count = st.session_state.get("turn_count", 0) + 1
+    if st.session_state.turn_count > MAX_TURNS_PER_SESSION or turns_in_last_hour() >= MAX_TURNS_PER_HOUR:
+        st.warning("Bản demo đã đạt giới hạn số câu hỏi để bảo vệ chi phí API. Vui lòng thử lại sau ít phút.")
+        st.stop()
 
 if user_text:
     user_message = {"role": "user", "content": user_text}

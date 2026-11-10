@@ -6,7 +6,9 @@ from typing import Any
 
 import requests
 
-from tools._shared import TIMEOUT, USER_AGENT, clamp_int, domain, err
+from tools._shared import TIMEOUT, USER_AGENT, check_public_url, clamp_int, domain, err
+
+MAX_REDIRECTS = 3
 
 ATOM = "{http://www.w3.org/2005/Atom}"
 
@@ -22,7 +24,19 @@ def read_rss(feed_url: str = "", limit: int = 5) -> dict[str, Any]:
         if not feed_url.startswith(("http://", "https://")):
             raise ValueError("feed_url must be an http(s) URL")
         limit = clamp_int(limit, 5, 1, 20)
-        response = requests.get(feed_url, headers={"User-Agent": USER_AGENT}, timeout=TIMEOUT)
+        # Follow redirects by hand so every hop is checked: a public URL must not be able to
+        # redirect the agent into localhost / the LAN (SSRF).
+        url = feed_url
+        for _ in range(MAX_REDIRECTS + 1):
+            check_public_url(url)
+            response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=TIMEOUT, allow_redirects=False)
+            if response.status_code in (301, 302, 303, 307, 308):
+                from urllib.parse import urljoin
+                url = urljoin(url, (getattr(response, "headers", None) or {}).get("Location", ""))
+                continue
+            break
+        else:
+            raise ValueError("too many redirects")
         response.raise_for_status()
         root = ET.fromstring(response.text)
         items: list[dict[str, Any]] = []

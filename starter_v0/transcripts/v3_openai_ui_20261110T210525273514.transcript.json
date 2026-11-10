@@ -9,7 +9,6 @@
   "system_prompt": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/system_prompt.md",
   "tools": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/tools.yaml",
   "interface": "streamlit",
-  "client_id": "telegramdemo01",
   "title": "Đăng bản tin \"[Test] Dori Research: kiểm thử gửi Telegram qua agent\" lên Telegram giúp tôi",
   "history_window": 5,
   "max_tool_rounds": 4,
@@ -141,5 +140,6 @@
         }
       ]
     }
-  ]
+  ],
+  "client_hash": "2f059f17df4e2d4179fc4d7f"
 }

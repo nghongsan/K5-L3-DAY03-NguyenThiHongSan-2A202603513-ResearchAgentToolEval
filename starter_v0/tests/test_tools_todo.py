@@ -7,8 +7,17 @@ from __future__ import annotations
 
 import requests
 
+import pytest
+
+import tools._shared as shared
 from conftest import FakeResponse
 from tools import TOOL_FUNCTIONS
+
+
+@pytest.fixture(autouse=True)
+def public_dns(monkeypatch):
+    """Offline DNS: every hostname resolves to a public address unless a test overrides it."""
+    monkeypatch.setattr(shared, "resolve_host", lambda host: ["93.184.216.34"])
 
 clarify = TOOL_FUNCTIONS["clarify"]
 format_tool = TOOL_FUNCTIONS["format"]
@@ -369,3 +378,26 @@ def test_rss_bad_input_from_model_makes_no_request(fake_http) -> None:
 def test_rss_invalid_xml_returns_error_dict(fake_http) -> None:
     fake_http(FakeResponse(text="<html>not a feed"))
     assert rss(feed_url="https://e.com/feed")["error"] == "ParseError"
+
+
+def test_rss_blocks_private_and_local_addresses_without_request(fake_http, monkeypatch) -> None:
+    # SSRF guard: users of the public demo must not reach the host machine or its LAN.
+    calls = fake_http(FakeResponse(text=RSS_XML))
+    for url in ("http://127.0.0.1:8501/feed", "http://192.168.1.1/rss", "http://169.254.169.254/latest/meta-data/",
+                "http://[::1]/feed", "http://10.0.0.5/feed.xml"):
+        result = rss(feed_url=url)
+        assert result["error"] == "ValueError", url
+        assert "non-public" in result["message"]
+    monkeypatch.setattr(shared, "resolve_host", lambda host: ["127.0.0.1"])  # e.g. "localhost"
+    assert rss(feed_url="http://localhost/feed")["error"] == "ValueError"
+    assert calls == []
+
+
+def test_rss_redirect_into_private_network_is_blocked(fake_http) -> None:
+    redirect = FakeResponse(status_code=302)
+    redirect.headers = {"Location": "http://127.0.0.1/admin"}
+    calls = fake_http(redirect)
+    result = rss(feed_url="https://blog.example.com/feed")
+    assert result["error"] == "ValueError"
+    assert len(calls) == 1  # the public URL was fetched once; the private redirect target never was
+    assert calls[0]["allow_redirects"] is False

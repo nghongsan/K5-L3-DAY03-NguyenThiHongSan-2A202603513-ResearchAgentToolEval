@@ -9,7 +9,6 @@
   "system_prompt": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/system_prompt.md",
   "tools": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/tools.yaml",
   "interface": "streamlit",
-  "client_id": "8c3fe695630340b1",
   "title": "Thời tiết Hà Nội hôm nay?",
   "history_window": 5,
   "max_tool_rounds": 4,
@@ -169,5 +168,6 @@
       "tool_events": [],
       "ended_at": "2026-11-10T20:34:06"
     }
-  ]
+  ],
+  "client_hash": "d7540c98dfff20f0c509510f"
 }
