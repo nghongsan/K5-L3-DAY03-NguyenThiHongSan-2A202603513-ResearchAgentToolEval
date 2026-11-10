@@ -298,7 +298,7 @@
       "metadata": {
         "skill": "missing_info_generic_source",
         "difficulty": "medium",
-        "what_it_tests": "Nói 'feed' nhưng không có URL → clarify xin URL, KHÔNG tự đoán feed (lỗi phát hiện khi chat live v6: agent tự chọn news.ycombinator.com/rss)."
+        "what_it_tests": "Nói 'feed' nhưng không có URL → clarify xin URL, KHÔNG tự đoán feed (lỗi phát hiện khi chat live trong vòng thử nghiệm: agent tự chọn news.ycombinator.com/rss)."
       }
     },
     {
@@ -328,7 +328,7 @@
       "metadata": {
         "skill": "missing_info_context_guess",
         "difficulty": "hard",
-        "what_it_tests": "Tái hiện lỗi chat live v6: ngữ cảnh trước nói về HN nên agent tự đoán URL feed (news.ycombinator.com/rss). Không có URL feed → clarify, không suy ra URL từ ngữ cảnh."
+        "what_it_tests": "Tái hiện lỗi chat live trong vòng thử nghiệm: ngữ cảnh trước nói về HN nên agent tự đoán URL feed (news.ycombinator.com/rss). Không có URL feed → clarify, không suy ra URL từ ngữ cảnh."
       }
     }
   ]

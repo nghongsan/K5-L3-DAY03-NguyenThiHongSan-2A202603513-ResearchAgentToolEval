@@ -3,88 +3,96 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Research Agent · K5-L3</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<title>Mochi Research · K5-L3</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700;800&display=swap">
 <style>
-:root{--bg:#f4f6f7;--card:#fff;--fg:#17212a;--muted:#5b6872;--line:#dbe1e5;--accent:#0f6e7a;--new:#2f8a4a;--new-bg:#e6f4ea;--warn:#a85d00;
---f:"Be Vietnam Pro",system-ui,sans-serif;--m:"JetBrains Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#11171b;--card:#192127;--fg:#e3e9ec;--muted:#97a4ad;--line:#2b353c;--accent:#4fb8c4;--new:#6cc488;--new-bg:#1a3123;--warn:#e3a74a}}
+:root{--pink:#ff7eb3;--pink-soft:#ffe3ee;--mist:#fff4f8;--lav:#c9b6ff;--lav-soft:#efe8ff;--mint:#bdf0dc;--ink:#5b3a4f;--ink-soft:#9a7489;--plum:#7a2e5a;--white:#fff;
+--f:"Nunito",system-ui,sans-serif;--d:"Baloo 2","Nunito",sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--f)}
-.wrap{max-width:1100px;margin:0 auto;padding:32px 16px 48px;display:grid;gap:20px}
-h1{margin:0;font-size:2.1rem;line-height:1.15}
-h2{margin:0 0 10px;font-size:1.05rem;letter-spacing:.02em}
-.lead{font-size:1.08rem;max-width:70ch;margin:8px 0 0}
-.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;min-width:0}
-.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
-.tool{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.88rem}
-.tool b{font-family:var(--m);font-size:.85rem}
-.tool.new{border-color:var(--new);background:var(--new-bg)}
-.tag{font-size:.7rem;font-weight:700;color:var(--new);margin-left:4px}
+body{margin:0;color:var(--ink);font:15px/1.55 var(--f);
+background:radial-gradient(rgba(255,126,179,.12) 1.5px,transparent 1.6px) 0 0/22px 22px,linear-gradient(180deg,var(--mist),#fbf6ff)}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 16px 48px;display:grid;gap:18px}
+.hero{display:flex;gap:20px;align-items:center;border-radius:28px;padding:24px 26px;border:3px solid var(--white);
+background:linear-gradient(120deg,#ffc2da,#f6c9ff 55%,#c9e9ff);box-shadow:0 12px 30px -14px rgba(232,80,143,.45)}
+.bunny{font-size:72px;line-height:1}
+h1{margin:0;font:800 2.5rem/1.05 var(--d);color:var(--plum)}
+.lead{margin:6px 0 0;font-size:1.05rem;max-width:62ch}
+.eyebrow{font-size:.78rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8a3a68}
+h2{margin:0 0 10px;font:700 1.2rem var(--d);color:#8a3a68}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.card{background:var(--white);border:2px solid var(--pink-soft);border-radius:22px;padding:18px 20px;min-width:0;box-shadow:0 8px 22px -16px rgba(232,80,143,.6)}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.tool{border:1.5px solid var(--pink-soft);border-radius:16px;padding:8px 12px;font-size:.9rem;background:var(--mist)}
+.tool b{font-weight:800}
+.tool.new{border-color:var(--mint);background:#effcf6}
+.tag{font-size:.7rem;font-weight:800;color:#2f8a5a;margin-left:4px}
 ol{margin:0;padding-left:20px;display:grid;gap:6px}
-code{font-family:var(--m);font-size:.85em}
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.metric{border-left:3px solid var(--accent);padding:4px 10px}
-.metric .n{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
-.metric .l{font-size:.8rem;color:var(--muted)}
-.rules li{margin-bottom:4px}
-.link{font-family:var(--m);background:var(--card);border:1px dashed var(--accent);border-radius:8px;padding:10px 14px;overflow-wrap:anywhere}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.84em;background:var(--lav-soft);padding:1px 6px;border-radius:8px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:10px}
+.metric{background:var(--lav-soft);border-radius:16px;padding:8px 12px}
+.metric .n{font:800 1.5rem var(--d);color:var(--plum);font-variant-numeric:tabular-nums}
+.metric .l{font-size:.8rem;color:var(--ink-soft)}
+.link{background:var(--white);border:2px dashed var(--pink);border-radius:18px;padding:10px 16px;overflow-wrap:anywhere;font-weight:700}
+.versions{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.versions li{display:flex;gap:10px;align-items:baseline}
+.versions .v{flex:none;font:800 .95rem var(--d);background:var(--pink-soft);color:var(--plum);border-radius:999px;padding:0 10px}
+@media (max-width:640px){.hero{flex-direction:column;align-items:flex-start}.bunny{font-size:52px}h1{font-size:2rem}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <span class="eyebrow">Day 03 · K5-L3 · Nguyễn Thị Hồng San · openai / gpt-4o-mini</span>
-    <h1>Research Agent tiếng Việt</h1>
-    <p class="lead">Tìm tin trên web, tweet, Hacker News, Wikipedia, GitHub, RSS, arXiv và policy nội bộ, rồi tổng hợp thành bản tin. Thiếu thông tin thì hỏi lại; luôn xin xác nhận trước khi đăng Telegram.</p>
+  <header class="hero">
+    <div class="bunny">🐰</div>
+    <div>
+      <span class="eyebrow">Day 03 · K5-L3 · Nguyễn Thị Hồng San · openai / gpt-4o-mini · v3</span>
+      <h1>Mochi Research</h1>
+      <p class="lead">Cô thỏ nhỏ đi lượm tin giúp bạn: web, tweet, Hacker News, Wikipedia, GitHub, RSS, arXiv và policy công ty, rồi gói lại thành bản tin thật xinh 🎀. Thiếu thông tin thì hỏi lại; luôn xin phép trước khi đăng Telegram.</p>
+    </div>
   </header>
 
-  <div class="link">Thử ngay: <b>(dán link trycloudflare.com khi demo)</b></div>
+  <div class="link">🔗 Thử ngay: (dán link trycloudflare.com khi demo)</div>
 
   <section class="card">
-    <h2>14 tool · 4 tool mới nhóm tự viết (không cần API key)</h2>
+    <h2>🧺 14 tool · 4 tool nhóm tự viết (không cần API key)</h2>
     <div class="tools">
-      <div class="tool new"><b>wiki</b><span class="tag">MỚI</span><br>Wikipedia vi/en: khái niệm, tiểu sử</div>
-      <div class="tool new"><b>hn_search</b><span class="tag">MỚI</span><br>Story Hacker News, nổi bật hoặc mới nhất</div>
-      <div class="tool new"><b>github_repo</b><span class="tag">MỚI</span><br>Sao, fork, license, lần push của repo</div>
-      <div class="tool new"><b>rss</b><span class="tag">MỚI</span><br>Bài mới nhất từ RSS/Atom feed</div>
-      <div class="tool"><b>lookup</b><br>Tìm tin trên web (news, timeframe)</div>
-      <div class="tool"><b>timeline</b><br>Tweet của một tài khoản</div>
-      <div class="tool"><b>social_search</b><br>Tweet theo chủ đề (Top/Latest)</div>
-      <div class="tool"><b>fetch</b><br>Đọc một URL</div>
-      <div class="tool"><b>papers · paper_text</b><br>Tìm và đọc paper arXiv</div>
-      <div class="tool"><b>policy</b><br>Quy định nội bộ công ty</div>
-      <div class="tool"><b>format</b><br>Trình bày thành digest markdown</div>
-      <div class="tool"><b>clarify · send</b><br>Hỏi lại · đăng Telegram sau khi xác nhận</div>
+      <div class="tool new">📚 <b>wiki</b><span class="tag">MỚI</span><br>Wikipedia vi/en: khái niệm, tiểu sử</div>
+      <div class="tool new">🧡 <b>hn_search</b><span class="tag">MỚI</span><br>Story Hacker News, nổi bật hoặc mới nhất</div>
+      <div class="tool new">🐙 <b>github_repo</b><span class="tag">MỚI</span><br>Sao, fork, license, lần push của repo</div>
+      <div class="tool new">📰 <b>rss</b><span class="tag">MỚI</span><br>Bài mới nhất từ RSS/Atom feed</div>
+      <div class="tool">🔎 <b>lookup</b><br>Tìm tin trên web (news, timeframe)</div>
+      <div class="tool">🐦 <b>timeline</b><br>Tweet của một tài khoản</div>
+      <div class="tool">💬 <b>social_search</b><br>Tweet theo chủ đề (Top/Latest)</div>
+      <div class="tool">🔗 <b>fetch</b><br>Đọc một URL</div>
+      <div class="tool">📄 <b>papers · paper_text</b><br>Tìm và đọc paper arXiv</div>
+      <div class="tool">📜 <b>policy</b><br>Quy định nội bộ công ty</div>
+      <div class="tool">🎀 <b>format</b><br>Trình bày thành digest markdown</div>
+      <div class="tool">💭 <b>clarify</b> · 💌 <b>send</b><br>Hỏi lại · đăng Telegram sau khi xác nhận</div>
     </div>
   </section>
 
   <div class="grid">
     <section class="card">
-      <h2>Câu hỏi mẫu để thử</h2>
+      <h2>🍓 Câu hỏi mẫu để thử</h2>
       <ol>
         <li><code>Transformer trong machine learning là gì? Tra Wikipedia giúp mình.</code></li>
         <li><code>Dân dev trên Hacker News đang bàn gì về AI agents? Lấy 3 bài nổi bật</code></li>
         <li><code>Repo pytorch/pytorch có bao nhiêu sao, license gì?</code></li>
-        <li><code>Repo này còn được maintain không?</code> → agent hỏi lại tên repo</li>
-        <li><code>Đăng bản tin AI hôm nay lên Telegram</code> → agent xin xác nhận trước</li>
+        <li><code>Repo này còn được maintain không?</code> → Mochi hỏi lại tên repo</li>
+        <li><code>Đăng bản tin AI hôm nay lên Telegram</code> → Mochi xin phép trước</li>
       </ol>
     </section>
     <section class="card">
-      <h2>Kết quả eval (v0 → v9)</h2>
+      <h2>✨ Kết quả eval (v0 → v3)</h2>
       <div class="metrics">
         <div class="metric"><div class="n">0.70 → 1.00</div><div class="l">base, 20 case</div></div>
-        <div class="metric"><div class="n">0.60 → 1.00</div><div class="l">extension, 10 case</div></div>
-        <div class="metric"><div class="n">11 / 12</div><div class="l">group, 12 case nhóm viết</div></div>
+        <div class="metric"><div class="n">1.00</div><div class="l">extension, 10 case</div></div>
+        <div class="metric"><div class="n">11 / 12</div><div class="l">group, case nhóm viết</div></div>
         <div class="metric"><div class="n">115 / 115</div><div class="l">pytest pass, 0 skip</div></div>
       </div>
-      <ul class="rules">
-        <li>Không đoán: thiếu handle/URL/repo thì hỏi lại.</li>
-        <li>Không gửi khi chưa xác nhận, kể cả khi user ép "khỏi hỏi".</li>
-        <li>Ngoài phạm vi (toán, code) thì từ chối lịch sự.</li>
-        <li>4 bug thật trong tool có sẵn được unit test bắt và sửa.</li>
+      <ul class="versions">
+        <li><span class="v">v1</span><span>Viết lại prompt: không đoán, xin phép trước khi gửi, rule routing → routing 1.00</span></li>
+        <li><span class="v">v2</span><span>Viết lại tools.yaml: quy ước args → base 1.00</span></li>
+        <li><span class="v">v3</span><span>Thêm 4 tool mới, không regression → group 11/12</span></li>
       </ul>
     </section>
   </div>

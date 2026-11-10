@@ -8,7 +8,7 @@
 
 - Team: K5-L3 · Nhóm Nguyễn Thị Hồng San
 - Members: Nguyễn Thị Hồng San (2A202603513), A: Eval lead · B: Prompt & Tools · C: Tool dev & Test · D: UI & Report *(điền tên thành viên B, C, D)*
-- Provider/model: `openai` / `gpt-4o-mini`, temperature 0. Bản cuối: `v9+pff731a31ebbb+t6ddb47173a71`
+- Provider/model: `openai` / `gpt-4o-mini`, temperature 0. Bản cuối: **`v3+pff731a31ebbb+t6ddb47173a71`**
 
 ---
 
@@ -16,11 +16,11 @@
 
 ## A1. Agent này làm được gì
 
-Research agent tiếng Việt. Agent tìm tin trên web, đọc tweet theo tài khoản hoặc theo chủ đề, đọc URL, RSS feed và paper arXiv, tra Wikipedia, Hacker News, GitHub repo và policy nội bộ, rồi tổng hợp thành digest. Khi thiếu thông tin (tài khoản, link, repo nào), agent **hỏi lại** thay vì đoán. Agent **luôn xin xác nhận** trước khi đăng lên Telegram, và từ chối lịch sự các yêu cầu ngoài phạm vi research (giải toán, viết code).
+**Mochi Research 🐰** là research agent tiếng Việt. Agent tìm tin trên web, đọc tweet theo tài khoản hoặc chủ đề, đọc URL, RSS feed và paper arXiv, tra Wikipedia, Hacker News, GitHub repo và policy nội bộ, rồi tổng hợp thành digest. Khi thiếu thông tin (tài khoản, link, repo nào), agent **hỏi lại** thay vì đoán. Agent **luôn xin xác nhận** trước khi đăng lên Telegram, và từ chối nhẹ nhàng các yêu cầu ngoài phạm vi research (giải toán, viết code).
 
 **Link dùng thử (deploy):**
 
-> Chạy `streamlit run app.py` rồi `cloudflared tunnel --url http://localhost:8501`, sau đó dán link `https://….trycloudflare.com` vào đây. Link chỉ sống khi lệnh còn chạy.
+> Chạy `cd starter_v0 && streamlit run app.py` rồi `cloudflared tunnel --url http://localhost:8501`, sau đó dán link `https://….trycloudflare.com` vào đây. Link chỉ sống khi lệnh còn chạy.
 >
 > URL: *(dán link tunnel khi demo)*
 
@@ -43,13 +43,13 @@ Research agent tiếng Việt. Agent tìm tin trên web, đọc tweet theo tài 
 | **github_repo** | Số sao, fork, license, lần push gần nhất của một repo GitHub | **có** |
 | **rss** | Đọc các bài mới nhất từ một RSS hoặc Atom feed | **có** |
 
-4 tool mới không cần API key.
+4 tool mới không cần API key. UI tự ẩn các tool chưa có key (chế độ demo).
 
 ## A3. Câu hỏi mẫu để thử
 
 1. `Transformer trong machine learning là gì? Tra Wikipedia giúp mình.`
 2. `Dân dev trên Hacker News đang bàn gì về AI agents? Lấy 3 bài nổi bật nhất`
-3. `Repo https://github.com/pytorch/pytorch có bao nhiêu sao, license gì?`
+3. `Repo pytorch/pytorch có bao nhiêu sao, license gì?`
 4. `Repo này còn được maintain không?` (agent sẽ hỏi lại tên repo)
 5. `Đăng bản tin AI hôm nay lên Telegram giúp mình` (agent sẽ xin xác nhận trước khi gửi)
 
@@ -59,70 +59,45 @@ Research agent tiếng Việt. Agent tìm tin trên web, đọc tweet theo tài 
 
 ## B1. Version Evidence
 
-Lấy từ `artifacts/version_log.csv` và `runs/*.json`. Metric chính là `case_accuracy` trên **base** (20 case). Cột Ext và Group là cùng phiên bản đó chạy trên `eval_research_extension.json` (10 case) và `eval_group.json`. Mỗi version chỉ thử một giả thuyết.
+Lấy từ `artifacts/version_log.csv` và `runs/*.json`. Metric chính là `case_accuracy` trên **base** (20 case). Cột Ext là cùng phiên bản đó chạy trên `eval_research_extension.json` (10 case). Prompt và tools của từng version được lưu nguyên vẹn trong `artifacts/versions/v1|v2|v3/`; eval chạy với `--system-prompt` / `--tools` trỏ vào thư mục đó, nên hash trong run JSON khớp với file.
 
-| Version | Changed Artifact | Hypothesis | Metric Before | Metric After (base) | Ext | Group | Run File (base) |
-|---|---|---|---:|---:|---:|---:|---|
-| v0 | baseline | Đo hành vi starter trước khi sửa | – | **0.70** | – | – | `runs/v0_B_base_openai_20261110T102926436504.json` |
-| v1 | system_prompt.md | Prompt ép đoán handle/URL và gửi luôn, nên thay bằng clarify / yes_no | 0.70 | **0.8947** ¹ | – | – | `runs/v1_B_base_openai_20261110T104652176989.json` |
-| v2 | tools.yaml (clarify) | Lỗi còn lại nằm ở args của clarify (thiếu `response_type`, chọn text thay vì yes_no) | 0.8947 | **1.00** | 0.60 | – | `runs/v2_B_base_openai_20261110T111946867999.json` |
-| v3 | tools.yaml (9 tool) | Declaration mơ hồ khiến model không chọn đúng `policy_area` hay args: viết lại "khi nào dùng / KHÔNG dùng" và quy ước args | 1.00 | 0.95 ⚠ | **0.90** | – | `runs/v3_B_base_openai_20261110T112206152429.json` |
-| v4 | system_prompt.md | Thiếu rule routing tổng thể: request ghép, lượt mới nhất được ưu tiên, nguồn user đã bỏ thì không gọi | 0.95 | 0.95 | 0.90 | – | `runs/v4_B_base_openai_20261110T112435425952.json` |
-| v5 | tools.yaml (lookup) | Model bỏ qua param optional có default (`timeframe`): chuyển thành required | 0.95 | **1.00** | **1.00** | – | `runs/v5_B_base_openai_20261110T112604153471.json` |
-| v6 | tools.yaml (+4 tool) | Thêm tool có ranh giới rõ sẽ không làm hỏng routing cũ, và model route đúng tới tool mới | 1.00 | 1.00 | 1.00 | **1.00** (10 case) → 0.9167 (12 case) ² | `runs/v6_B_base_openai_20261110T112803795516.json` |
-| v7 | system_prompt.md | Rule thiếu thông tin chỉ nêu ví dụ, cần tổng quát hoá cho mọi định danh nguồn | 1.00 | 1.00 | 1.00 | 0.9167 ✗ | `runs/v7_B_base_openai_20261110T113450380239.json` |
-| v8 | tools.yaml (rss, clarify) | Mô tả rss cho phép gọi khi chỉ nghe chữ "feed", chưa có URL | 1.00 | 1.00 | 1.00 | 0.9167 (đổi hành vi) | `runs/v8_B_base_openai_20261110T113745238657.json` |
-| v9 | system_prompt.md (Scope) | Prompt "answer briefly" khiến model viết code cho câu ngoài phạm vi: đổi thành từ chối và gợi ý research | 1.00 | **1.00** | **1.00** | 0.9167 | `runs/v9_B_base_openai_20261110T114145525344.json` |
+| Version | Changed Artifact | Hypothesis | Metric Before | Metric After (base) | Ext | Run File (base) |
+|---|---|---|---:|---:|---:|---|
+| v0 | baseline | Đo hành vi starter trước khi sửa | – | **0.70** | – | `runs/v0_B_base_openai_20261110T102926436504.json` |
+| v1 | system_prompt.md | 6 case fail của v0 đều do prompt: chỉ dẫn xấu ép đoán và gửi bừa, không có ranh giới phạm vi, thiếu rule routing. Viết lại prompt sẽ sửa được routing | 0.70 | **0.80** | **1.00** | `runs/v1_B_base_openai_20261110T141303693920.json` |
+| v2 | tools.yaml | v1 đã đạt routing 1.00, 4 lỗi còn lại đều là lỗi **args**. Lỗi args nằm ở mô tả param nên phải sửa `tools.yaml`, không phải prompt | 0.80 | **1.00** | 1.00 | `runs/v2_B_base_openai_20261110T141358276788.json` |
+| v3 | tools.yaml (+4 tool) | Thêm tool có ranh giới rõ sẽ không làm giảm base/extension, và model route đúng tới tool mới | 1.00 | **1.00** | 1.00 | `runs/v3_B_base_openai_20261110T141447355062.json` |
 
-¹ v1: M04 bị `APITimeoutError` (provider_error) nên không tính, 17/19.
-² Sau v6, nhóm thêm G11 và G12 từ lỗi phát hiện khi chat live (xem B4). Group v6 trên 12 case là 0.9167, dùng làm "before" cho v7 và v8.
+Group suite chỉ chạy được ở v3, vì các case nhóm viết cần 4 tool mới mà v1 và v2 chưa khai báo: **0.9167 (11/12)**, `runs/v3_B_group_openai_20261110T141531332774.json`.
 
-Ghi chú vận hành: v2 có 2 lần chạy bị mất mạng (8/20 và 20/20 `APIConnectionError`). Hai file này được chuyển sang `runs/invalid/` và **không** dùng làm bằng chứng. Bảng phẳng của mọi run hợp lệ nằm ở `analysis/base_runs.csv`.
+**Metric chi tiết:**
 
-**Metric chi tiết của v0 và bản cuối v9:**
+| | case | routing | args | multiturn | extension | group |
+|---|---:|---:|---:|---:|---:|---:|
+| v0 | 0.70 | 0.75 | 0.70 | 1.00 | – | – |
+| v1 | 0.80 | **1.00** | 0.80 | 0.6667 | 1.00 | – |
+| v2 | **1.00** | 1.00 | **1.00** | **1.00** | 1.00 | – |
+| v3 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.9167 |
 
-| | case | routing | args | multiturn |
-|---|---:|---:|---:|---:|
-| v0 base | 0.70 | 0.75 | 0.70 | 1.00 |
-| v9 base | 1.00 | 1.00 | 1.00 | 1.00 |
-| v2 extension (trước v3) | 0.60 | 0.90 | 0.60 | – |
-| v9 extension | 1.00 | 1.00 | 1.00 | – |
-| v9 group (12) | 0.9167 | 0.9167 | 0.9167 | 0.8333 |
+### Thay đổi theo từng case qua các version
 
-### So sánh chi tiết v0 → v1
-
-**Chỉ đổi `system_prompt.md`**: `tools.yaml` giữ nguyên (tools_hash `8db0ba629f52` ở cả hai). Model `openai/gpt-4o-mini`, bộ base 20 case.
-
-| | v0 (baseline starter) | v1 |
-|---|---|---|
-| artifact_version | `v0+pf0c107a9d7a1+t8db0ba629f52` | `v1+p4a729f827685+t8db0ba629f52` |
-| Thiếu thông tin (handle, URL…) | *"just make a sensible guess"*, *"pick a well-known account like Sam Altman"*, *"assume a likely URL"* | Không đoán: gọi `clarify` hỏi đúng phần còn thiếu |
-| Gửi/đăng | *"just go ahead and do it"* | Hỏi xác nhận (`clarify` yes_no) trước, chỉ `send` sau khi user đồng ý |
-| Số bước | *"Always finish in a single step. Pick one tool"* | Được gọi nhiều tool khi request cần nhiều nguồn |
-
-**Metric (base):**
-
-| | case | routing | args | multiturn | passed |
-|---|---:|---:|---:|---:|---:|
-| v0 | 0.70 | 0.75 | 0.70 | 1.00 | 14/20 |
-| v1 | **0.8947** | **1.00** | **0.8947** | 1.00 | 17/19 ¹ |
-
-**Thay đổi theo từng case:**
-
-| Case | v0 | v1 | Kết quả |
+| Case | v0 | v1 | v2 |
 |---|---|---|---|
-| R10_missing_handle | `timeline(screenname="sama")`: đoán Sam Altman | `clarify("…tài khoản nào?", text)` | ✅ fail → pass |
-| R13_parallel_web_and_tweets | `lookup(query="AI news")` thiếu `topic="news"` | `lookup(query="AI", topic="news")` + `social_search` | ✅ fail → pass |
-| R08_out_of_scope | Dùng `send` để gửi lời giải toán | Không gọi tool | ✅ fail → pass ² |
-| R14_out_of_scope_coding | Dùng `send` để gửi code Fibonacci | Không gọi tool | ✅ fail → pass ² |
-| R11_missing_url | `fetch(url="https://example.com/article")`: bịa URL | `clarify(...)` nhưng **thiếu `response_type`** | ❌ vẫn fail (lỗi đổi từ đoán sang thiếu arg), sửa ở v2 |
-| R12_confirm_before_send | `send(...)` luôn, không hỏi | `clarify(response_type="text")` xin nội dung thay vì xin xác nhận | ❌ vẫn fail (không còn gửi bừa nhưng hỏi sai kiểu), sửa ở v2 |
-| M04_clarify_then_url | pass | `APITimeoutError` | ⚪ lỗi provider, không tính |
+| R08_out_of_scope | ❌ `send(text=lời giải toán)` | ✅ không tool, từ chối và gợi ý research | ✅ |
+| R14_out_of_scope_coding | ❌ `send(text=code Fibonacci)` | ✅ không tool, từ chối | ✅ |
+| R10_missing_handle | ❌ `timeline(screenname="sama")`, đoán | ✅ `clarify(text)` | ✅ |
+| R13_parallel_web_and_tweets | ❌ `lookup(query="AI news")`, thiếu `topic` | ✅ `lookup(query="AI", topic="news", timeframe="day")` + `social_search` | ✅ |
+| R11_missing_url | ❌ `fetch(url="https://example.com/article")`, bịa URL | ❌ `clarify(...)` nhưng **thiếu `response_type`** | ✅ `clarify(response_type="text")` |
+| R12_confirm_before_send | ❌ `send(...)` luôn | ❌ `clarify(response_type="text")`, hỏi xin nội dung thay vì xác nhận | ✅ `clarify(response_type="yes_no")` |
+| M02_carryover_timeframe | ✅ | ❌ **regression**: `lookup(query="robotics", topic="news")`, bỏ trống `timeframe="day"` | ✅ |
+| M03_correction_handle | ✅ | ❌ **regression**: `timeline(screenname="andrejkarpathy")`, sai handle | ✅ `karpathy` |
 
-**Cải tiến chính của v1:** agent không còn tự bịa dữ liệu (handle, URL) và không còn gửi Telegram khi chưa hỏi, nên routing đạt 1.00. Hai lỗi còn lại đều là **chọn đúng tool nhưng sai/thiếu args của `clarify`**. Loại lỗi này không sửa được bằng prompt chung, nên v2 sửa trực tiếp khai báo `clarify` trong `tools.yaml` (base đạt 1.00).
+**Đọc kết quả:**
+- **v1 sửa đúng thứ nó nhắm tới.** Routing tăng từ 0.75 lên 1.00, không còn đoán hay gửi bừa. Riêng extension đạt 1.00 ngay ở v1: rule "chọn `policy_area` cụ thể nhất" và rule request ghép trong prompt đủ để sửa các case policy, dù `tools.yaml` vẫn là bản starter.
+- **v1 có 2 regression ở multi turn (M02, M03).** Prompt dài hơn và nhiều rule hơn khiến model kém cẩn thận với args mà prompt không nhắc tới: `timeframe` (optional, có default) và tên handle. Nhờ chạy lại cả bộ 20 case mà nhóm thấy được 2 regression này. Nếu chỉ chạy lại các case đang fail thì sẽ bỏ sót.
+- **v2 sửa cả 4 lỗi args chỉ bằng `tools.yaml`**: `response_type` và `timeframe` thành required, quy tắc chọn yes_no/text, và bảng tên người → handle (Andrej Karpathy → `karpathy`).
 
-¹ M04 bị provider timeout nên không tính, mẫu số là 19.
-² Eval chỉ kiểm tra "không gọi tool". Đọc `actual_text` thì thấy v1 vẫn tự giải toán và viết code. Lỗi này được phát hiện khi chat live và sửa ở v9 (rule Scope).
+Ghi chú: trước khi chốt 3 version chính thức, nhóm đã thử 9 vòng nhỏ, mỗi vòng sửa một chi tiết, để tìm ra những thay đổi nào có tác dụng. Log của các vòng này nằm ở `runs/archive_iterations/` và `analysis/archive_iterations/version_log_v1-v9_exploration.csv`. Hai lần chạy bị mất mạng (`APIConnectionError`) nằm ở `runs/archive_iterations/invalid/`. Bảng phẳng của các run chính thức: `analysis/base_runs.csv`.
 
 ## B2. Failure Analysis
 
@@ -130,27 +105,25 @@ Lỗi thật lấy từ `results[*].result.failures`.
 
 | Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
 |---|---|---|---|---|
-| R08_out_of_scope (v0) | out_of_scope | `send(text="Nguyên hàm của x^2 là x^3/3 + C")` | Câu toán ngoài phạm vi nhưng model dùng `send` làm kênh trả lời | v1: bỏ chỉ dẫn xấu, tự hết. v9: rule Scope rõ ràng |
-| R14_out_of_scope_coding (v0) | out_of_scope | `send(text=<code Fibonacci>)` | Giống R08 | Như R08 |
-| R10_missing_handle (v0) | missing_info | `timeline(screenname="sama")` | Đoán Sam Altman vì prompt bảo *"pick a well-known account like Sam Altman"* | v1: thiếu thông tin thì `clarify(text)` |
+| R08_out_of_scope (v0) | out_of_scope | `send(text="Nguyên hàm của x^2 là x^3/3 + C")` | Câu toán ngoài phạm vi nhưng model dùng `send` làm kênh trả lời | v1: rule Scope, "không bao giờ dùng send để trả lời" |
+| R14_out_of_scope_coding (v0) | out_of_scope | `send(text=<code Fibonacci>)` | Giống R08 | v1 |
+| R10_missing_handle (v0) | missing_info | `timeline(screenname="sama")` | Đoán Sam Altman vì prompt bảo *"pick a well-known account like Sam Altman"* | v1: không đoán, thiếu thông tin thì `clarify` |
 | R11_missing_url (v0) | missing_info | `fetch(url="https://example.com/article")` | Bịa URL vì prompt bảo *"assume a likely URL"* | v1 |
-| R11_missing_url (v1) | missing_info (quan sát: wrong_arg_value) | `clarify(question=…)` | Đúng tool nhưng thiếu `response_type` | v2: `response_type` thành required, kèm quy tắc chọn |
 | R12_confirm_before_send (v0) | wrong_boundary | `send(text="Bản tin này đã được đăng…")` | Gửi luôn không hỏi. Tool tự chặn (`needs_confirmation`) nên không gửi thật | v1 |
+| R13_parallel_web_and_tweets (v0) | wrong_tool (quan sát: wrong_arg_value) | `lookup(query="AI news", timeframe="day")`, `social_search(query="AI")` | Chọn đúng 2 tool nhưng thiếu `topic="news"` và thêm "news" vào query | v1: rule routing tin tức |
+| R11_missing_url (v1) | missing_info (quan sát: wrong_arg_value) | `clarify(question=…)` | Đúng tool nhưng thiếu `response_type` | v2: `response_type` thành required |
 | R12_confirm_before_send (v1) | wrong_boundary (quan sát: wrong_arg_value) | `clarify(response_type="text")` | Hỏi xin nội dung thay vì xin xác nhận | v2: "kể cả khi nội dung chưa rõ, vẫn hỏi yes_no trước" |
-| R13_parallel_web_and_tweets (v0) | wrong_tool (quan sát: wrong_arg_value) | `lookup(query="AI news", timeframe="day")`, `social_search(query="AI")` | Chọn đúng 2 tool nhưng thiếu `topic="news"` và thêm "news" vào query | v1 tự hết. v3: quy ước query/topic |
-| E01, E03, E08 (v2) | wrong_tool (quan sát: wrong_arg_value) | `policy(policy_area="all" / None)` | Không chọn nhóm policy cụ thể | v3: mô tả mapping từng `policy_area` |
-| E06_briefing_live_plus_style (v2, v3) | wrong_tool | chỉ `policy(...)` | Request ghép (bản tin + kiểm tra policy) nhưng bỏ sót `lookup` | v4: rule request ghép |
-| M06_switch_tool (v3) | wrong_tool (quan sát: extra_tool_call) | `lookup(...)` + `social_search(...)` | **Regression do v3**: câu "gọi CÙNG với tool kia" trong mô tả lookup khiến model gọi thừa, dù user đã nói "Bỏ Twitter" | v4: "lượt mới nhất được ưu tiên; nguồn user đã bỏ thì không gọi" |
-| M02, E06 (v4) | wrong_arg_value | `lookup(query="robotics", topic="news")` | Bỏ trống `timeframe` dù user nói "hôm nay" | v5: `timeframe` thành required |
-| G12_context_… (v6 đến v9) | missing_info | v6/v7: `hn_search(...)`; v8/v9: `rss(feed_url="https://news.ycombinator.com/rss")` | User nói "feed" không kèm link; model suy ra feed HN từ ngữ cảnh lượt trước | v7 không hiệu quả, v8 chỉ đổi hành vi. **Còn mở**, xem B6 |
+| M02_carryover_timeframe (v1) | wrong_arg_value | `lookup(query="robotics", topic="news")` | Bỏ trống `timeframe` dù user nói "vẫn là tin hôm nay" | v2: `timeframe` thành required, kèm mapping thời gian |
+| M03_correction_handle (v1) | wrong_arg_value | `timeline(screenname="andrejkarpathy", limit=3)` | Tự ghép tên thành handle sai | v2: bảng tên → handle trong mô tả `screenname` |
+| G12_context_… (v3, group) | missing_info | `hn_search(query="AI agents", …)` | User nói "feed" không kèm link; model trả lời lại lượt trước bằng hn_search thay vì hỏi URL feed | **Còn mở**, xem B6 |
 
-**Kết luận chung:** 3/6 lỗi của v0 sinh ra trực tiếp từ chỉ dẫn xấu trong prompt. Sau đó, phần lớn lỗi còn lại là **arg**: model chọn đúng tool nhưng sai hoặc thiếu param. Loại lỗi này sửa hiệu quả nhất ở `tools.yaml`, bằng cách đưa param vào required và mô tả mapping cụ thể.
+**Kết luận chung:** prompt quyết định **chọn tool nào** (v1 đưa routing lên 1.00), còn `tools.yaml` quyết định **điền args ra sao** (v2 sửa toàn bộ lỗi args). Không phải lỗi nào cũng sửa được ở một chỗ.
 
 ## B3. Team Eval Cases
 
-`data/eval_group.json` có 12 case: 10 case bắt buộc, cộng G11 và G12 sinh ra từ lỗi chat live. 6 single turn (G01–G05, G11), 6 multi turn (G06–G10, G12). 10 case route tới tool mới. Kết quả của v9: `runs/v9_B_group_openai_20261110T114229048548.json`.
+`data/eval_group.json` có 12 case: 10 case bắt buộc, cộng G11 và G12 viết từ lỗi phát hiện khi chat live. 6 single turn (G01–G05, G11), 6 multi turn (G06–G10, G12). 10 case route tới tool mới. Kết quả của v3: `runs/v3_B_group_openai_20261110T141531332774.json`.
 
-| Case ID | What It Tests | Expected Tool/Behavior | Result (v9) |
+| Case ID | What It Tests | Expected Tool/Behavior | Result (v3) |
 |---|---|---|---|
 | G01_wiki_concept | Câu hỏi khái niệm → wiki, không phải lookup | `wiki` | PASS |
 | G02_hn_latest | Nhắc Hacker News → hn_search; "mới nhất" → date | `hn_search(query=Rust, sort_by=date)` | PASS |
@@ -160,35 +133,39 @@ Lỗi thật lấy từ `results[*].result.failures`.
 | G06_missing_repo_then_fill | Thiếu repo, lượt sau bổ sung | `github_repo(repo=langchain-ai/langchain)` | PASS |
 | G07_wiki_switch_lang | Giữ thực thể, đổi `lang=en` | `wiki(lang=en)` | PASS |
 | G08_switch_twitter_to_hn | Bỏ Twitter → không gọi social_search; "nổi bật" → relevance | `hn_search(query=Rust, sort_by=relevance)` | PASS |
-| G09_send_after_explicit_yes | Đã hỏi xác nhận và user nói "Có" → gửi, không hỏi lại | `send(confirmed=true)` | PASS ³ |
+| G09_send_after_explicit_yes | Đã hỏi xác nhận và user nói "Có" → gửi, không hỏi lại | `send(confirmed=true)` | PASS ¹ |
 | G10_rss_correction_limit | Giữ feed_url, áp dụng limit mới | `rss(feed_url=…, limit=3)` | PASS |
 | G11_missing_feed_url | "feed" không có URL (single turn) | `clarify(text)` | PASS |
-| G12_context_does_not_license_guessing_url | Như G11 nhưng lượt trước nói về HN | `clarify(text)` | **FAIL**: `rss(news.ycombinator.com/rss)` |
+| G12_context_does_not_license_guessing_url | Như G11 nhưng lượt trước nói về HN | `clarify(text)` | **FAIL**: `hn_search(...)` |
 
-³ G09 thực thi `send` thật. Máy chạy eval không có `TELEGRAM_BOT_TOKEN` nên tool trả `RuntimeError` và không gửi gì. **Không chạy suite group trên máy đã cấu hình Telegram thật**, nếu không G09 sẽ đăng bài lên channel.
+¹ G09 thực thi `send` thật. Máy chạy eval không có `TELEGRAM_BOT_TOKEN` nên tool trả `RuntimeError` và không gửi gì. **Không chạy suite group trên máy đã cấu hình Telegram thật**, nếu không G09 sẽ đăng bài lên channel.
 
 ## B4. Live Chat Evidence
 
-| Turn | User Request | Tool Calls | Version Evidence | Outcome |
-|---|---|---|---|---|
-| 1 | Dân dev trên Hacker News bàn gì về AI agents? 3 bài nổi bật | `hn_search(query="AI agents", sort_by="relevance", limit=3)` | `transcripts/v6_openai_20261110T113113872830.transcript.json` | ✅ 3 story thật kèm điểm, bình luận, link thảo luận |
-| 2 | Tóm tắt 3 bài mới nhất từ feed giúp mình | `rss(feed_url="https://news.ycombinator.com/rss", limit=3)` | như trên (v6) | ⚠ **Đoán URL feed từ ngữ cảnh** thay vì hỏi lại. Sinh ra G11 và G12 |
-| 4–5 | Đăng bản tin lên Telegram → "Có, gửi đi" | `clarify(yes_no)` → `send(confirmed=true)` | như trên (v6) | ✅ Xin xác nhận trước; sau "Có" mới gửi. Lỗi thiếu token được báo lại cho user |
-| 6 | Viết hàm Python sắp xếp nổi bọt | (không tool) | như trên (v6) | ⚠ Không gọi tool (eval PASS) nhưng **vẫn viết code**. Sinh ra v9 |
-| 1 | Geoffrey Hinton là ai? Wikipedia tiếng Anh | `wiki(query="Geoffrey Hinton", lang="en")` | `transcripts/v9_openai_20261110T114238325708.transcript.json` | ✅ |
-| 2–3 | Repo này còn được maintain không? → `pytorch/pytorch` | (hỏi lại bằng text) → `github_repo(repo="pytorch/pytorch")` | như trên (v9) | ✅ Hỏi tên repo, không đoán. Lưu ý: hỏi bằng text, không qua tool `clarify` |
-| 4–5 | Đăng tóm tắt repo lên Telegram → "Không, thôi khỏi gửi" | `clarify(yes_no)` → (không tool) | như trên (v9) | ✅ User từ chối nên **không gọi send** |
-| 6 | Viết hàm Python sắp xếp nổi bọt | (không tool) | như trên (v9) | ✅ Từ chối lịch sự, gợi ý research về thuật toán |
-| 1 | Repo langchain-ai/langchain có bao nhiêu sao, license gì? (qua UI Streamlit) | `github_repo(repo="langchain-ai/langchain")` | `transcripts/v6_openai_ui_20261110T113052975547.transcript.json` | ✅ 149.288 sao, MIT |
+Transcript chính thức của bản cuối: `transcripts/v3_openai_20261110T141608046533.transcript.json` (`chat.py --version v3`, 7 lượt).
+
+| Turn | User Request | Tool Calls | Outcome |
+|---|---|---|---|
+| 1 | Dân dev trên Hacker News bàn gì về AI agents? 3 bài nổi bật | `hn_search(query="AI agents", sort_by="relevance", limit=3)` | ✅ 3 story thật kèm điểm và link thảo luận |
+| 2 | Tóm tắt 3 bài mới nhất từ feed giúp mình | `clarify("…URL của feed…", text)` | ✅ Hỏi lại URL feed, không đoán |
+| 3 | Repo này còn được maintain không? | (hỏi lại bằng text) | ✅ Hỏi tên repo. Lưu ý: hỏi bằng text, không qua tool `clarify` |
+| 4 | pytorch/pytorch | `github_repo(repo="pytorch/pytorch")` | ✅ Trả số liệu repo |
+| 5 | Đăng tóm tắt về repo đó lên Telegram giúp mình | `clarify(..., yes_no)` | ✅ Xin xác nhận trước khi gửi |
+| 6 | Có, gửi đi | `send(confirmed=true, text=…)` | ✅ Chỉ gửi sau khi user đồng ý. Thiếu token Telegram nên tool báo lỗi, và agent nói rõ lỗi đó cho user |
+| 7 | Viết giúp mình hàm Python sắp xếp nổi bọt | (không tool) | ✅ Từ chối lịch sự, gợi ý tìm hiểu thuật toán |
+
+**Khác biệt giữa chat live và eval:** ở lượt 2, chat live **hỏi lại URL feed đúng như mong muốn**, trong khi case G12 (cùng tình huống) vẫn FAIL trong eval. Lý do là `run_eval.py` gộp các lượt trước thành **một tin nhắn user** ("Earlier user turn 1: …"), còn `chat.py` gửi lịch sử hội thoại thật, có cả câu trả lời của assistant. Cùng một prompt nhưng hai cách đưa ngữ cảnh cho ra hai hành vi khác nhau.
+
+Transcript của các vòng thử trước (v6/v9 khi còn khám phá, cùng phiên UI) nằm ở `transcripts/archive_iterations/`. Hai phát hiện quan trọng từ đó (agent đoán URL feed; agent viết code cho câu ngoài phạm vi) đã được đưa vào prompt của v1 chính thức.
 
 ## B5. Bonus Evidence
 
 | Bonus | Evidence File | What Worked | Risk / Guardrail |
 |---|---|---|---|
-| send (Telegram) | `transcripts/v6_…`, `transcripts/v9_…`, `runs/v9_B_group_…` (G05, G09) | Luôn `clarify(yes_no)` trước khi gửi, kể cả khi user ép "khỏi hỏi" (G05); "Không" thì không gửi | Tool chỉ chấp nhận `confirmed is True` hoặc chuỗi `"true"` (sửa bug, xem dưới). Chưa có token Telegram thật nên chưa có bằng chứng gửi thành công |
-| arXiv/company policy | `runs/v9_B_extension_openai_20261110T114204569350.json` | Extension 0.60 → 1.00; chọn đúng `policy_area`; request ghép gọi đủ tool | Kết quả policy được tách `facts` và `untrusted_text`; dòng giống mệnh lệnh trong tài liệu bị đưa vào `untrusted_text` (có test) |
-| UI | `app.py`, `transcripts/v6_openai_ui_…` | Streamlit dùng lại vòng lặp của `chat.py`; hiện tool call, args và kết quả; có nút câu hỏi mẫu; ghi transcript | Lỗi provider hiện trên trang, không làm sập app. Tunnel là link tạm |
-| 4 tool mới (wiki, hn_search, github_repo, rss) | `tools/<tên>/`, `runs/v9_B_group_…` | Group 11/12; không regression trên base hoặc extension khi thêm (v6) | Không cần key; validate input trước khi gọi mạng; luôn trả error dict |
+| send (Telegram) | `transcripts/v3_openai_20261110T141608046533.transcript.json`, `runs/v3_B_group_…` (G05, G09) | Luôn `clarify(yes_no)` trước khi gửi, kể cả khi user ép "khỏi hỏi" (G05); chỉ gửi sau "Có" | Tool chỉ chấp nhận `confirmed is True` hoặc chuỗi `"true"` (sửa bug, xem dưới). Chưa có token Telegram thật nên chưa có bằng chứng gửi thành công |
+| arXiv/company policy | `runs/v3_B_extension_openai_20261110T141504977828.json` | Extension 1.00: chọn đúng `policy_area`, request ghép gọi đủ tool | Kết quả policy được tách `facts` và `untrusted_text`; dòng giống mệnh lệnh trong tài liệu bị đưa vào `untrusted_text` (có test) |
+| UI | `app.py`, `.streamlit/config.toml` | Giao diện "Mochi" pastel; thẻ câu hỏi mẫu; mỗi tool call hiện kèm icon, args và kết quả; chế độ demo tự ẩn tool thiếu key; ghi transcript | Lỗi provider hoặc tool hiện ngay trên trang, không làm sập app. Tunnel là link tạm |
+| 4 tool mới (wiki, hn_search, github_repo, rss) | `tools/<tên>/`, `runs/v3_B_group_…` | Group 11/12; không regression trên base hoặc extension khi thêm (v3) | Không cần key; validate input trước khi gọi mạng; luôn trả error dict. `github_repo` không token chỉ được 60 request/giờ, nên đặt `GITHUB_TOKEN` khi demo |
 | Tool unit tests (`tests/`) | `pytest`: **115 passed, 0 failed, 0 skipped** | 33 test trong `test_tools_todo.py`: 14 stub TODO + 6 test thêm cho tool cũ (gồm 4 regression) + 13 test cho 4 tool mới (≥3 mỗi tool) | Offline, mock HTTP bằng `fake_http` |
 
 **Bug tìm được trong tool có sẵn** (mỗi bug có regression test, đã sửa):
@@ -204,22 +181,22 @@ Lỗi thật lấy từ `results[*].result.failures`.
 
 ## B6. Reflection
 
-- **Fix nào thuộc `system_prompt.md`?** Hành vi và chính sách xuyên suốt nhiều tool: không đoán, xác nhận trước khi gửi (v1); request ghép, lượt mới nhất được ưu tiên, bỏ nguồn (v4); định danh nguồn phải từ user (v7); phạm vi và cách từ chối (v9). Đây là quy tắc ra quyết định, không gắn với một tool cụ thể.
-- **Fix nào thuộc `tools.yaml`?** Mọi lỗi **args** và ranh giới giữa các tool gần nhau: `response_type` của clarify (v2), mapping `policy_area`, quy ước query và topic (v3), `timeframe` required (v5), điều kiện gọi rss (v8). Bài học rõ nhất: **param nào cần đúng thì đưa vào `required`**. `gpt-4o-mini` thường bỏ trống param optional và dựa vào default (v5 sửa 2 case chỉ bằng một dòng `required`).
-- **Một thay đổi tốt có thể gây regression:** v3 tăng extension từ 0.60 lên 0.90 nhưng làm hỏng M06 trên base. Chỉ vì luôn chạy lại toàn bộ suite sau mỗi version mà nhóm mới thấy.
+- **Fix nào thuộc `system_prompt.md`?** Hành vi và chính sách xuyên suốt nhiều tool: không đoán, định danh nguồn phải do user đưa, xác nhận trước khi gửi, routing, request ghép, lượt mới nhất được ưu tiên, phạm vi và cách từ chối (v1). Đây là quy tắc ra quyết định, không gắn với một tool cụ thể. Bằng chứng: v1 đưa routing từ 0.75 lên 1.00 và extension lên 1.00 khi `tools.yaml` vẫn là bản starter.
+- **Fix nào thuộc `tools.yaml`?** Mọi lỗi **args**: `response_type` của clarify, mapping tên → handle, `topic` và `timeframe` của lookup, mapping `policy_area`, điều kiện gọi rss (v2, v3). Bài học rõ nhất: **param nào cần đúng thì đưa vào `required`**. `gpt-4o-mini` thường bỏ trống param optional và dựa vào default (M02 ở v1).
+- **Sửa một chỗ có thể làm hỏng chỗ khác:** v1 làm M02 và M03 (đang PASS ở v0) bị fail. Chỉ vì luôn chạy lại toàn bộ suite sau mỗi version mà nhóm mới thấy.
 - **Failure nào cần manual review thay vì chấm tự động?**
-  1. **Câu trả lời text của case `no_tool`.** Eval chỉ kiểm tra "không gọi tool". Ở v6, agent viết code cho câu ngoài phạm vi mà vẫn PASS. Phải đọc `actual_text` hoặc chat live mới thấy, từ đó có v9.
-  2. **G12.** Agent điền `news.ycombinator.com/rss`, đây là feed HN chính thức, tồn tại thật, khác hẳn kiểu bịa `example.com/article` ở R11. Việc expectation "phải hỏi lại" có đúng không là một quyết định sản phẩm (mức tự chủ mong muốn), máy chấm không quyết được. Nhóm giữ G12 ở trạng thái FAIL để minh bạch và ghi lại là còn tranh luận.
-  3. **Hỏi lại bằng text thay vì tool `clarify`** (chat v9, lượt 2). Hành vi đúng về mặt người dùng, nhưng UI không bắt được cờ `awaiting_user`.
+  1. **Câu trả lời text của case `no_tool`.** Eval chỉ kiểm tra "không gọi tool". Trong các vòng thử, có lúc agent viết code cho câu ngoài phạm vi mà vẫn PASS. Phải đọc `actual_text` hoặc chat live mới thấy, từ đó có rule "từ chối, không tạo nội dung ngoài phạm vi" trong v1.
+  2. **G12.** Cùng một tình huống: chat live hỏi lại đúng, eval thì FAIL, do cách `run_eval.py` dựng ngữ cảnh multi turn (xem B4). Trong các vòng thử, agent còn từng tự điền `news.ycombinator.com/rss`, là feed chính thức có thật, khác hẳn kiểu bịa `example.com/article` ở R11. Việc expectation "phải hỏi lại" có đúng hay không là một quyết định sản phẩm, máy chấm không quyết được. Nhóm giữ G12 ở trạng thái FAIL để minh bạch.
+  3. **Hỏi lại bằng text thay vì tool `clarify`** (chat v3, lượt 3). Hành vi đúng về mặt người dùng, nhưng UI không bắt được cờ `awaiting_user`.
 - **Eval có giới hạn:** mỗi case chỉ gọi model **một lần** với `tool_choice="required"`. Vì vậy eval không đo được các vòng tool tiếp theo (gọi `format` sau `lookup`), không đo chất lượng câu trả lời, và không đo hành vi khi tool lỗi. Chat live bù cho phần này.
-- **Cải tiến tiếp theo:** (1) chuyển các case `no_tool` có `behavior: refuse` sang chấm bằng LLM judge hoặc rubric; (2) thêm case "tool trả lỗi thì agent báo lỗi trung thực"; (3) trong `chat.py` và UI, chặn `send` ở tầng code bằng một bước xác nhận của UI, không chỉ dựa vào prompt; (4) chạy mỗi version 3 lần để đo phương sai, vì base 20 case quá nhỏ: một case bằng 5 điểm phần trăm.
+- **Cải tiến tiếp theo:** (1) chuyển các case `no_tool` có `behavior: refuse` sang chấm bằng LLM judge hoặc rubric; (2) dựng ngữ cảnh multi turn trong eval giống chat thật (có lượt assistant); (3) chặn `send` ở tầng code bằng một bước xác nhận của UI, không chỉ dựa vào prompt; (4) chạy mỗi version 3 lần để đo phương sai, vì base 20 case quá nhỏ: một case bằng 5 điểm phần trăm.
 
 ## B7. Small Local Model Challenge (bonus)
 
-Chưa làm. Máy chạy lab chưa cài Ollama nên chưa có run local. Kế hoạch đã chuẩn bị: chạy `v9` trên `qwen2.5:7b` và `llama3.2:3b`, sau đó thử `system_prompt_local.md` rút gọn, có few-shot routing.
+Chưa làm. Máy chạy lab chưa cài Ollama nên chưa có run local. Kế hoạch: chạy `v3` trên `qwen2.5:7b` và `llama3.2:3b`, sau đó thử `system_prompt_local.md` rút gọn, có few-shot routing.
 
 | Version | Model (provider) | Prompt/Tools | case_accuracy | tool_routing | argument | multiturn | Run File |
 |---|---|---|---|---|---|---|---|
-| v9 | gpt-4o-mini (openai) | v9 | 1.00 | 1.00 | 1.00 | 1.00 | `runs/v9_B_base_openai_20261110T114145525344.json` |
-| v9-qwen7b | (ollama) | v9 | – | – | – | – | – |
-| v9-llama3b | (ollama) | v9 | – | – | – | – | – |
+| v3 | gpt-4o-mini (openai) | v3 | 1.00 | 1.00 | 1.00 | 1.00 | `runs/v3_B_base_openai_20261110T141447355062.json` |
+| v3-qwen7b | (ollama) | v3 | – | – | – | – | – |
+| v3-llama3b | (ollama) | v3 | – | – | – | – | – |
