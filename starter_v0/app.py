@@ -107,8 +107,8 @@ header[data-testid="stHeader"]{background:transparent}
   box-shadow:var(--shadow); border:2px solid var(--sky);
   display:flex; gap:18px; align-items:center; margin-bottom:22px;
 }
-.dori-hero .logo{width:118px; height:118px; flex:none; border-radius:28px; background:var(--white);
-  box-shadow:0 8px 18px -10px rgba(91,111,191,.55); animation:bob 3.6s ease-in-out infinite}
+.dori-hero .logo{width:124px; height:124px; flex:none; object-fit:contain;
+  filter:drop-shadow(0 8px 10px rgba(91,111,191,.28)); animation:bob 3.6s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @media (prefers-reduced-motion: reduce){.dori-hero .logo{animation:none}}
 .dori-hero h1{font-family:'Baloo 2','Nunito',sans-serif !important; font-weight:800; font-size:2.3rem; margin:0; line-height:1.05; color:var(--navy); padding:0}
@@ -119,13 +119,13 @@ header[data-testid="stHeader"]{background:transparent}
 .pill-row{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
 .pill{background:var(--white); border:1.5px solid var(--sky); border-radius:999px; padding:3px 11px; font-size:.8rem; font-weight:700; color:var(--blue-deep)}
 .dori-hero.compact{padding:10px 20px 10px 12px; gap:12px; margin-bottom:16px; border-radius:20px}
-.dori-hero.compact .logo{width:52px; height:52px; border-radius:16px; animation:none}
+.dori-hero.compact .logo{width:56px; height:56px; animation:none}
 .dori-hero.compact h1{font-size:1.45rem}
 .dori-hero.compact p{margin-top:0; font-size:.88rem}
 .dori-hero.compact .s2{display:none}
 @media (max-width: 640px){
   .dori-hero{flex-direction:column; align-items:flex-start; gap:10px; padding:18px}
-  .dori-hero .logo{width:84px; height:84px; border-radius:22px}
+  .dori-hero .logo{width:92px; height:92px}
   .dori-hero h1{font-size:1.85rem}
   .dori-hero.compact{flex-direction:row; align-items:center}
 }
@@ -165,10 +165,18 @@ header[data-testid="stHeader"]{background:transparent}
   background:var(--white); border-radius:22px; padding:14px 18px; margin-bottom:12px;
   border:2px solid var(--blue-soft); box-shadow:0 8px 22px -18px rgba(91,111,191,.6);
 }
-[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarCustom"] img){background:var(--white)}
-[data-testid="stChatMessage"]:not(:has(img)){background:var(--blue-soft); border-color:var(--sky)}
-[data-testid="stChatMessageAvatarCustom"]{background:var(--sun-soft) !important; border-radius:50% !important}
-[data-testid="stChatMessage"] img{border-radius:50%}
+/* Dori's messages carry the mascot image; the user's carry none. */
+[data-testid="stChatMessage"]:has(img){background:var(--white)}
+[data-testid="stChatMessageAvatarCustom"]{background:transparent !important; border-radius:0 !important; width:2.6rem !important; height:2.6rem !important}
+[data-testid="stChatMessageAvatarCustom"] img{object-fit:contain; border-radius:0}
+/* user bubble: no avatar, right-aligned, tinted */
+[data-testid="stChatMessage"]:not(:has(img)){
+  background:var(--blue-soft); border-color:var(--sky); width:fit-content; max-width:80%; margin-left:auto;
+  border-bottom-right-radius:8px; padding:10px 16px;
+}
+[data-testid="stChatMessage"]:not(:has(img)) > div[aria-hidden="true"],
+[data-testid="stChatMessage"]:not(:has(img)) [data-testid^="stChatMessageAvatar"]{display:none !important}
+[data-testid="stChatMessage"]:not(:has(img)) [data-testid="stChatMessageContent"]{margin-left:0 !important}
 [data-testid="stChatInput"]{border-radius:20px !important; border:2px solid var(--blue) !important; background:var(--white) !important; box-shadow:var(--shadow)}
 [data-testid="stBottom"] > div{background:transparent !important}
 [data-testid="stBottomBlockContainer"]{background:linear-gradient(180deg, transparent, var(--blue-mist) 45%) !important}
@@ -183,7 +191,7 @@ header[data-testid="stHeader"]{background:transparent}
 /* ---------- sidebar ---------- */
 [data-testid="stSidebar"]{background:linear-gradient(180deg,#f4f7ff,#eceffd) !important; border-right:2px solid var(--white)}
 .side-brand{display:flex; align-items:center; gap:10px; margin:0 0 2px}
-.side-brand img{width:42px; height:42px; border-radius:12px; background:var(--white); box-shadow:0 4px 10px -6px rgba(91,111,191,.6)}
+.side-brand img{width:48px; height:48px; object-fit:contain; filter:drop-shadow(0 4px 5px rgba(91,111,191,.25))}
 .side-brand b{font-family:'Baloo 2',sans-serif !important; font-weight:800; font-size:1.4rem; color:var(--navy); line-height:1.1}
 .side-title{font-family:'Baloo 2',sans-serif !important; font-weight:700; font-size:1.02rem; color:var(--navy); margin:14px 0 6px}
 .chips{display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 6px}
@@ -524,7 +532,8 @@ if user_text:
     render_message(user_message)
 
     messages = [
-        {"role": "system", "content": runtime["system_prompt"]},
+        {"role": "system", "content": runtime["system_prompt"]
+            + f"\n\nHôm nay là ngày {datetime.now().strftime('%d/%m/%Y')}."},
         *trim_history(st.session_state.history, HISTORY_WINDOW),
         {"role": "user", "content": user_text},
     ]

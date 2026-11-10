@@ -270,7 +270,17 @@ def main() -> None:
     parser.add_argument("--tools", type=Path, default=ARTIFACTS_DIR / "tools.yaml")
     parser.add_argument("--eval-cases", type=Path, default=DATA_DIR / "eval_base.json")
     parser.add_argument("--runs-dir", type=Path, default=ROOT / "runs")
+    parser.add_argument("--allow-send", action="store_true",
+                        help="Really execute the `send` tool during eval. Off by default: cases like G09 expect "
+                             "send(confirmed=true), which would post to the real Telegram channel.")
     args = parser.parse_args()
+
+    if not args.allow_send and "send" in TOOL_FUNCTIONS:
+        # Scoring only looks at the tool calls and args, never at the tool result, so a dry run is safe.
+        def _send_dry_run(text: str = "", confirmed: bool = False) -> dict[str, Any]:
+            return {"tool": "send_telegram", "status": "dry_run",
+                    "message": "Eval dry run: nothing was posted (pass --allow-send to really send)."}
+        TOOL_FUNCTIONS["send"] = _send_dry_run
 
     system_prompt = args.system_prompt.read_text(encoding="utf-8")
     artifact_version = build_artifact_version(args.version, args.system_prompt, args.tools)

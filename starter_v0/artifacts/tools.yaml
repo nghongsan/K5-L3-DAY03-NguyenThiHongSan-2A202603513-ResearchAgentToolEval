@@ -71,7 +71,7 @@ tools:
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Chỉ chủ đề chính, ngắn gọn: 'AI', 'robotics', 'OpenAI'. KHÔNG thêm các chữ 'news', 'tin tức', 'hôm nay' vào query, vì topic/timeframe đã thể hiện điều đó."}
+        query: {type: string, default: "", description: "Giữ nguyên NHU CẦU THÔNG TIN của user: chủ đề + loại thông tin cần tìm, ví dụ 'thời tiết Hà Nội', 'giá vàng', 'lịch thi đấu SEA Games', 'AI', 'robotics'. Chỉ bỏ các từ đã được topic/timeframe thể hiện: 'tin tức', 'tin', 'news', 'hôm nay', 'tuần này'. KHÔNG cắt bớt danh từ chỉ loại thông tin (thời tiết, giá, lịch, tỷ giá, kết quả...)."}
         topic: {type: string, enum: [general, news], default: "general", description: "'news' khi user hỏi tin/tin tức/bản tin/sự kiện mới (kể cả 'tin công nghệ', 'tin AI'); 'general' cho tra cứu thông tin chung."}
         timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "BẮT BUỘC điền. 'hôm nay'/'24h' -> day; 'tuần này' -> week; 'tháng này' -> month; 'năm nay' -> year; user không nói thời gian -> week. Giữ timeframe user đã nói ở lượt trước nếu họ không đổi."}
         max_results: {type: integer, default: 5, description: "Số kết quả, mặc định 5."}
@@ -184,6 +184,8 @@ tools:
       Tra Wikipedia để lấy kiến thức nền ổn định: định nghĩa, khái niệm, tiểu sử, lịch sử
       ("X là gì", "Y là ai", "giải thích khái niệm Z").
       KHÔNG dùng cho tin tức/sự kiện mới (dùng lookup), tweet (timeline/social_search) hay paper (papers).
+      KHÔNG dùng cho câu hỏi về TÌNH TRẠNG HIỆN TẠI có thể đã thay đổi (ai đang giữ chức vụ, đương kim vô địch,
+      giá, tỷ giá, thời tiết, kết quả mới nhất): dùng lookup.
     parameters:
       type: object
       properties:
