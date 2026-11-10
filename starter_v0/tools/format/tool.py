@@ -29,7 +29,7 @@ def render_digest(items: list[dict[str, Any]] | None = None, template: str = "se
     elif template == "daily_ai_vn":
         groups: dict[str, list[dict[str, Any]]] = {}
         for item in items:
-            groups.setdefault(item.get("section", "Tin chính"), []).append(item)
+            groups.setdefault(item.get("section") or "Tin chính", []).append(item)
         parts = [f"**{headline or 'Tin tức hôm nay'}**", ""]
         for section, section_items in groups.items():
             parts += [f"**{section}**", *[_bullet(item) for item in section_items], ""]
@@ -37,7 +37,7 @@ def render_digest(items: list[dict[str, Any]] | None = None, template: str = "se
     else:
         groups: dict[str, list[dict[str, Any]]] = {}
         for item in items:
-            groups.setdefault(item.get("section", "Tổng hợp"), []).append(item)
+            groups.setdefault(item.get("section") or "Tổng hợp", []).append(item)
         parts = ([f"# {headline}", ""] if headline else [])
         for section, section_items in groups.items():
             parts += [f"## {section}", *[_bullet(item) for item in section_items], ""]

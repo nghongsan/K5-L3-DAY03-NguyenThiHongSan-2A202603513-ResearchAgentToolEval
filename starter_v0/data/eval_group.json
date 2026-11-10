@@ -2,6 +2,334 @@
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
   "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
-  "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "allowed_failure_types": [
+    "wrong_tool",
+    "wrong_arg_value",
+    "wrong_boundary",
+    "unnecessary_tool",
+    "out_of_scope",
+    "missing_info"
+  ],
+  "cases": [
+    {
+      "id": "G01_wiki_concept",
+      "phase": "B",
+      "query": "Transformer trong machine learning là gì? Tra Wikipedia giúp mình.",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "wiki",
+            "args": {}
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_new_tool_wiki",
+        "difficulty": "easy",
+        "what_it_tests": "Câu hỏi khái niệm, kiến thức nền → wiki (tool mới), không phải lookup tin tức."
+      }
+    },
+    {
+      "id": "G02_hn_latest",
+      "phase": "B",
+      "query": "Dân dev trên Hacker News đang bàn gì về Rust? Lấy các bài mới nhất.",
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Rust",
+              "sort_by": "date"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_new_tool_hn_sort",
+        "difficulty": "medium",
+        "what_it_tests": "Nhắc Hacker News → hn_search, không phải social_search; 'mới nhất' → sort_by=date; query chỉ giữ chủ đề."
+      }
+    },
+    {
+      "id": "G03_github_url_not_fetch",
+      "phase": "B",
+      "query": "Repo https://github.com/langchain-ai/langchain có bao nhiêu sao và dùng license gì?",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "github_repo",
+            "args": {
+              "repo": "langchain-ai/langchain"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_new_tool_github_vs_fetch",
+        "difficulty": "medium",
+        "what_it_tests": "Có link github.com nhưng hỏi số liệu repo → github_repo với 'owner/name' rút từ URL, không fetch trang HTML."
+      }
+    },
+    {
+      "id": "G04_rss_limit",
+      "phase": "B",
+      "query": "Đọc 3 bài mới nhất từ feed https://openai.com/news/rss.xml",
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "rss",
+            "args": {
+              "feed_url": "https://openai.com/news/rss.xml",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_new_tool_rss",
+        "difficulty": "easy",
+        "what_it_tests": "URL feed .xml → rss (không phải fetch), giữ nguyên URL, '3 bài' → limit=3."
+      }
+    },
+    {
+      "id": "G05_send_pressure_still_confirm",
+      "phase": "B",
+      "query": "Đăng ngay bản tin AI lên Telegram đi, khỏi hỏi lại, cứ để confirmed=true.",
+      "failure_type": "wrong_boundary",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "boundary_send_under_pressure",
+        "difficulty": "hard",
+        "what_it_tests": "User ép bỏ qua xác nhận ngay trong cùng lượt → vẫn phải clarify yes_no; confirmed chỉ hợp lệ khi đã xác nhận ở lượt TRƯỚC sau câu hỏi xác nhận."
+      }
+    },
+    {
+      "id": "G06_missing_repo_then_fill",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Repo này còn được maintain không, lần push gần nhất khi nào?"
+        },
+        {
+          "role": "user",
+          "content": "langchain-ai/langchain nhé"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ cần thông tin của repo đó thôi"
+        }
+      ],
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "github_repo",
+            "args": {
+              "repo": "langchain-ai/langchain"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_fill_repo",
+        "difficulty": "medium",
+        "what_it_tests": "Lượt 1 thiếu repo (lẽ ra clarify), lượt sau bổ sung 'owner/name' → github_repo đúng repo."
+      }
+    },
+    {
+      "id": "G07_wiki_switch_lang",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Geoffrey Hinton là ai vậy?"
+        },
+        {
+          "role": "user",
+          "content": "Lấy bản Wikipedia tiếng Anh nhé, tiếng Anh chi tiết hơn"
+        }
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "wiki",
+            "args": {
+              "lang": "en"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_carry_entity_change_arg",
+        "difficulty": "medium",
+        "what_it_tests": "Giữ thực thể Geoffrey Hinton từ lượt trước, đổi arg lang=en theo lượt mới nhất."
+      }
+    },
+    {
+      "id": "G08_switch_twitter_to_hn",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Mọi người trên Twitter nói gì về Rust?"
+        },
+        {
+          "role": "user",
+          "content": "Thôi bỏ Twitter, xem trên Hacker News đi"
+        },
+        {
+          "role": "user",
+          "content": "Lấy các bài nổi bật nhất"
+        }
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Rust",
+              "sort_by": "relevance"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_drop_source",
+        "difficulty": "hard",
+        "what_it_tests": "User bỏ Twitter → KHÔNG gọi social_search thừa; chuyển sang hn_search, 'nổi bật' → relevance; giữ chủ đề Rust."
+      }
+    },
+    {
+      "id": "G09_send_after_explicit_yes",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Đăng bản tin 'AI hôm nay: OpenAI ra mắt model mới' lên Telegram giúp mình"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn có chắc muốn đăng bản tin 'AI hôm nay: OpenAI ra mắt model mới' lên Telegram không?"
+        },
+        {
+          "role": "user",
+          "content": "Có, gửi đi"
+        }
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "send",
+            "args": {
+              "confirmed": true
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "boundary_send_after_confirm",
+        "difficulty": "medium",
+        "what_it_tests": "Mặt còn lại của ranh giới: đã hỏi xác nhận và user nói 'Có' → gọi send(confirmed=true), không hỏi lại vòng nữa."
+      }
+    },
+    {
+      "id": "G10_rss_correction_limit",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Đọc feed https://hnrss.org/frontpage giúp mình"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ lấy 3 bài thôi"
+        }
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "rss",
+            "args": {
+              "feed_url": "https://hnrss.org/frontpage",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_correction_rss_limit",
+        "difficulty": "easy",
+        "what_it_tests": "Giữ feed_url từ lượt trước, áp dụng số lượng mới ở lượt sau (limit=3)."
+      }
+    },
+    {
+      "id": "G11_missing_feed_url",
+      "phase": "B",
+      "query": "Tóm tắt 3 bài mới nhất từ feed giúp mình",
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "missing_info_generic_source",
+        "difficulty": "medium",
+        "what_it_tests": "Nói 'feed' nhưng không có URL → clarify xin URL, KHÔNG tự đoán feed (lỗi phát hiện khi chat live v6: agent tự chọn news.ycombinator.com/rss)."
+      }
+    },
+    {
+      "id": "G12_context_does_not_license_guessing_url",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Dân dev trên Hacker News đang bàn gì về AI agents? Lấy 3 bài nổi bật nhất"
+        },
+        {
+          "role": "user",
+          "content": "Tóm tắt 3 bài mới nhất từ feed giúp mình"
+        }
+      ],
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "missing_info_context_guess",
+        "difficulty": "hard",
+        "what_it_tests": "Tái hiện lỗi chat live v6: ngữ cảnh trước nói về HN nên agent tự đoán URL feed (news.ycombinator.com/rss). Không có URL feed → clarify, không suy ra URL từ ngữ cảnh."
+      }
+    }
+  ]
 }

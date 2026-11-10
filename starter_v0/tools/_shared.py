@@ -36,3 +36,17 @@ def terms(text: str) -> set[str]:
     folded = fold_text(text)
     return {term for term in re.findall(r"[a-z0-9]+", folded) if len(term) > 1 and term not in stopwords}
 
+
+
+def clamp_int(value: Any, default: int, lo: int, hi: int) -> int:
+    """Coerce model-sent numbers ("5", 5.0, None, 0) into a safe int range."""
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        number = default
+    if number < lo:
+        number = default if number <= 0 else lo
+    return min(number, hi)
+
+
+USER_AGENT = "AI20k-Day03-Research-Agent/1.0 (educational lab)"

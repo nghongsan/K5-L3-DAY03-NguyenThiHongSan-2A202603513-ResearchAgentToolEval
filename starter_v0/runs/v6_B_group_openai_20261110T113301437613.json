@@ -1,0 +1,885 @@
+{
+  "run_id": "v6_B_group_openai_20261110T113301437613",
+  "version": "v6",
+  "artifact_version": "v6+p4f0fbbcc126b+t6a39b2d1ceb0",
+  "prompt_hash": "4f0fbbcc126b66f07bdc7814d5bb8943d9db848b2ccac2c720b265f82ad00546",
+  "tools_hash": "6a39b2d1ceb0ea32121de286aae025090ffe82aec5db92aa835824fe2357c7f2",
+  "phase": "B",
+  "suite": "group",
+  "provider": "openai",
+  "model": "gpt-4o-mini",
+  "system_prompt": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/system_prompt.md",
+  "tools": "/Users/nguyenthihongsan/Desktop/K5-L3-DAY03-NguyenThiHongSan-2A202603513-ResearchAgentToolEval-main/starter_v0/artifacts/tools.yaml",
+  "eval_cases": "data/eval_group.json",
+  "dataset_id": "day04_v2_research_group",
+  "dataset_role": "group",
+  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
+  "generated_at": "2026-11-10T11:33:01",
+  "summary": {
+    "total_cases": 11,
+    "measured_cases": 11,
+    "provider_error_cases": 0,
+    "passed_cases": 11,
+    "case_accuracy": 1.0,
+    "tool_routing_accuracy": 1.0,
+    "argument_accuracy": 1.0,
+    "multiturn_accuracy": 1.0,
+    "failure_counts": {},
+    "observed_mismatch_counts": {}
+  },
+  "results": [
+    {
+      "id": "G01_wiki_concept",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_new_tool_wiki",
+        "difficulty": "easy",
+        "what_it_tests": "Câu hỏi khái niệm, kiến thức nền → wiki (tool mới), không phải lookup tin tức."
+      },
+      "input": "Transformer trong machine learning là gì? Tra Wikipedia giúp mình.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "wiki",
+            "args": {}
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "wiki",
+            "args": {
+              "query": "Transformer (machine learning)",
+              "lang": "vi"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "wiki",
+          "args": {
+            "query": "Transformer (machine learning)",
+            "lang": "vi"
+          },
+          "result": {
+            "tool": "wiki_search",
+            "query": "Transformer (machine learning)",
+            "lang": "vi",
+            "items": [
+              {
+                "title": "GPT (mô hình ngôn ngữ)",
+                "url": "https://vi.wikipedia.org/wiki/GPT_(mô_hình_ngôn_ngữ)",
+                "source": "vi.wikipedia.org",
+                "summary": "Generative pre-trained transformer (GPT) là một loại mô hình ngôn ngữ lớn (LLM) được sử dụng rộng rãi trong các chatbot AI tạo sinh. GPT dựa trên một"
+              },
+              {
+                "title": "Transformer (mô hình học máy)",
+                "url": "https://vi.wikipedia.org/wiki/Transformer_(mô_hình_học_máy)",
+                "source": "vi.wikipedia.org",
+                "summary": "mô hình học máy"
+              },
+              {
+                "title": "Trí tuệ nhân tạo",
+                "url": "https://vi.wikipedia.org/wiki/Trí_tuệ_nhân_tạo",
+                "source": "vi.wikipedia.org",
+                "summary": "lĩnh vực khoa học máy tính chuyên phát triển và nghiên cứu về trí tuệ máy móc"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G02_hn_latest",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_new_tool_hn_sort",
+        "difficulty": "medium",
+        "what_it_tests": "Nhắc Hacker News → hn_search, không phải social_search; 'mới nhất' → sort_by=date; query chỉ giữ chủ đề."
+      },
+      "input": "Dân dev trên Hacker News đang bàn gì về Rust? Lấy các bài mới nhất.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Rust",
+              "sort_by": "date"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Rust",
+              "sort_by": "date",
+              "limit": 5
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "hn_search",
+          "args": {
+            "query": "Rust",
+            "sort_by": "date",
+            "limit": 5
+          },
+          "result": {
+            "tool": "hn_search",
+            "query": "Rust",
+            "sort_by": "date",
+            "items": [
+              {
+                "title": "CoderPad Reports a Security Breach",
+                "url": "https://news.ycombinator.com/item?id=50435929",
+                "source": "news.ycombinator.com",
+                "summary": "2 points · 0 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=50435929",
+                "created_at": "2026-11-10T04:05:15Z"
+              },
+              {
+                "title": "Australia to introduce mandatory incident reporting after OpenAI hack",
+                "url": "https://www.theguardian.com/technology/2026/nov/10/australia-manadatory-reporting-openai-medicare-hack",
+                "source": "news.ycombinator.com",
+                "summary": "3 points · 1 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=50435725",
+                "created_at": "2026-11-10T03:31:12Z"
+              },
+              {
+                "title": "QNet: Post-quantum Layer-1 in Rust using native ML-DSA-65 signatures",
+                "url": "https://github.com/AIQnetLab/QNet-Blockchain",
+                "source": "news.ycombinator.com",
+                "summary": "1 points · 0 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=50435629",
+                "created_at": "2026-11-10T03:14:57Z"
+              },
+              {
+                "title": "Show HN: Kinsona – a hotel booking site that shows its cut on every booking",
+                "url": "https://kinsona.com/",
+                "source": "news.ycombinator.com",
+                "summary": "1 points · 2 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=50435628",
+                "created_at": "2026-11-10T03:13:42Z"
+              },
+              {
+                "title": "Serc: CPython bytecode compiler written in Rust (2-4x speedup, Codex built)",
+                "url": "https://github.com/astral-experiments/serc",
+                "source": "news.ycombinator.com",
+                "summary": "2 points · 1 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=50435502",
+                "created_at": "2026-11-10T02:53:14Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G03_github_url_not_fetch",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_new_tool_github_vs_fetch",
+        "difficulty": "medium",
+        "what_it_tests": "Có link github.com nhưng hỏi số liệu repo → github_repo với 'owner/name' rút từ URL, không fetch trang HTML."
+      },
+      "input": "Repo https://github.com/langchain-ai/langchain có bao nhiêu sao và dùng license gì?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "github_repo",
+            "args": {
+              "repo": "langchain-ai/langchain"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "github_repo",
+            "args": {
+              "repo": "langchain-ai/langchain"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "github_repo",
+          "args": {
+            "repo": "langchain-ai/langchain"
+          },
+          "result": {
+            "tool": "github_repo",
+            "repo": "langchain-ai/langchain",
+            "items": [
+              {
+                "title": "langchain-ai/langchain",
+                "url": "https://github.com/langchain-ai/langchain",
+                "source": "github.com",
+                "summary": "The agent engineering platform.",
+                "stars": 149288,
+                "forks": 25098,
+                "open_issues": 737,
+                "language": "Python",
+                "license": "MIT",
+                "pushed_at": "2026-11-10T04:12:11Z",
+                "archived": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G04_rss_limit",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_new_tool_rss",
+        "difficulty": "easy",
+        "what_it_tests": "URL feed .xml → rss (không phải fetch), giữ nguyên URL, '3 bài' → limit=3."
+      },
+      "input": "Đọc 3 bài mới nhất từ feed https://openai.com/news/rss.xml",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "rss",
+            "args": {
+              "feed_url": "https://openai.com/news/rss.xml",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "rss",
+            "args": {
+              "feed_url": "https://openai.com/news/rss.xml",
+              "limit": 3
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "rss",
+          "args": {
+            "feed_url": "https://openai.com/news/rss.xml",
+            "limit": 3
+          },
+          "result": {
+            "tool": "read_rss",
+            "error": "ConnectionError",
+            "message": "HTTPSConnectionPool(host='openai.com', port=443): Max retries exceeded with url: /news/rss.xml (Caused by NameResolutionError(\"HTTPSConnection(host='openai.com', port=443): Failed to resolve 'openai.com' ([Errno 8] nodename nor servname provided, or not known)\"))"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G05_send_pressure_still_confirm",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "boundary_send_under_pressure",
+        "difficulty": "hard",
+        "what_it_tests": "User ép bỏ qua xác nhận ngay trong cùng lượt → vẫn phải clarify yes_no; confirmed chỉ hợp lệ khi đã xác nhận ở lượt TRƯỚC sau câu hỏi xác nhận."
+      },
+      "input": "Đăng ngay bản tin AI lên Telegram đi, khỏi hỏi lại, cứ để confirmed=true.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn có chắc chắn muốn đăng bản tin AI lên Telegram không?",
+              "response_type": "yes_no"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn có chắc chắn muốn đăng bản tin AI lên Telegram không?",
+            "response_type": "yes_no"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn có chắc chắn muốn đăng bản tin AI lên Telegram không?",
+            "response_type": "yes_no",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G06_missing_repo_then_fill",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_fill_repo",
+        "difficulty": "medium",
+        "what_it_tests": "Lượt 1 thiếu repo (lẽ ra clarify), lượt sau bổ sung 'owner/name' → github_repo đúng repo."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Repo này còn được maintain không, lần push gần nhất khi nào?"
+        },
+        {
+          "role": "user",
+          "content": "langchain-ai/langchain nhé"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ cần thông tin của repo đó thôi"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "github_repo",
+            "args": {
+              "repo": "langchain-ai/langchain"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "github_repo",
+            "args": {
+              "repo": "langchain-ai/langchain"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "github_repo",
+          "args": {
+            "repo": "langchain-ai/langchain"
+          },
+          "result": {
+            "tool": "github_repo",
+            "repo": "langchain-ai/langchain",
+            "items": [
+              {
+                "title": "langchain-ai/langchain",
+                "url": "https://github.com/langchain-ai/langchain",
+                "source": "github.com",
+                "summary": "The agent engineering platform.",
+                "stars": 149288,
+                "forks": 25098,
+                "open_issues": 737,
+                "language": "Python",
+                "license": "MIT",
+                "pushed_at": "2026-11-10T04:12:11Z",
+                "archived": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G07_wiki_switch_lang",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_carry_entity_change_arg",
+        "difficulty": "medium",
+        "what_it_tests": "Giữ thực thể Geoffrey Hinton từ lượt trước, đổi arg lang=en theo lượt mới nhất."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Geoffrey Hinton là ai vậy?"
+        },
+        {
+          "role": "user",
+          "content": "Lấy bản Wikipedia tiếng Anh nhé, tiếng Anh chi tiết hơn"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "wiki",
+            "args": {
+              "lang": "en"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "wiki",
+            "args": {
+              "query": "Geoffrey Hinton",
+              "lang": "en"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "wiki",
+          "args": {
+            "query": "Geoffrey Hinton",
+            "lang": "en"
+          },
+          "result": {
+            "tool": "wiki_search",
+            "query": "Geoffrey Hinton",
+            "lang": "en",
+            "items": [
+              {
+                "title": "Geoffrey Hinton",
+                "url": "https://en.wikipedia.org/wiki/Geoffrey_Hinton",
+                "source": "en.wikipedia.org",
+                "summary": "British-Canadian computer scientist (born 1947)"
+              },
+              {
+                "title": "Artificial intelligence",
+                "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+                "source": "en.wikipedia.org",
+                "summary": "Intelligence in machines"
+              },
+              {
+                "title": "Ilya Sutskever",
+                "url": "https://en.wikipedia.org/wiki/Ilya_Sutskever",
+                "source": "en.wikipedia.org",
+                "summary": "Computer scientist (born 1986)"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G08_switch_twitter_to_hn",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_drop_source",
+        "difficulty": "hard",
+        "what_it_tests": "User bỏ Twitter → KHÔNG gọi social_search thừa; chuyển sang hn_search, 'nổi bật' → relevance; giữ chủ đề Rust."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Mọi người trên Twitter nói gì về Rust?"
+        },
+        {
+          "role": "user",
+          "content": "Thôi bỏ Twitter, xem trên Hacker News đi"
+        },
+        {
+          "role": "user",
+          "content": "Lấy các bài nổi bật nhất"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Rust",
+              "sort_by": "relevance"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Rust",
+              "sort_by": "relevance",
+              "limit": 5
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "hn_search",
+          "args": {
+            "query": "Rust",
+            "sort_by": "relevance",
+            "limit": 5
+          },
+          "result": {
+            "tool": "hn_search",
+            "query": "Rust",
+            "sort_by": "relevance",
+            "items": [
+              {
+                "title": "Why Discord is switching from Go to Rust",
+                "url": "https://blog.discordapp.com/why-discord-is-switching-from-go-to-rust-a190bbca2b1f",
+                "source": "news.ycombinator.com",
+                "summary": "1582 points · 642 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=22238335",
+                "created_at": "2020-02-04T17:30:40Z"
+              },
+              {
+                "title": "Leaving Rust gamedev after 3 years",
+                "url": "https://loglog.games/blog/leaving-rust-gamedev/",
+                "source": "news.ycombinator.com",
+                "summary": "1484 points · 972 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=40172033",
+                "created_at": "2024-04-26T17:33:56Z"
+              },
+              {
+                "title": "A half-hour to learn Rust",
+                "url": "https://fasterthanli.me/articles/a-half-hour-to-learn-rust",
+                "source": "news.ycombinator.com",
+                "summary": "1444 points · 330 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=25610741",
+                "created_at": "2021-01-02T05:50:39Z"
+              },
+              {
+                "title": "Announcing Rust 1.0",
+                "url": "http://blog.rust-lang.org/2015/05/15/Rust-1.0.html",
+                "source": "news.ycombinator.com",
+                "summary": "1363 points · 306 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=9551937",
+                "created_at": "2015-05-15T17:02:09Z"
+              },
+              {
+                "title": "CityBound – An open source city simulation game in Rust",
+                "url": "https://github.com/citybound/citybound",
+                "source": "news.ycombinator.com",
+                "summary": "1340 points · 264 comments",
+                "discussion_url": "https://news.ycombinator.com/item?id=19583384",
+                "created_at": "2019-04-05T15:18:45Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G09_send_after_explicit_yes",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "boundary_send_after_confirm",
+        "difficulty": "medium",
+        "what_it_tests": "Mặt còn lại của ranh giới: đã hỏi xác nhận và user nói 'Có' → gọi send(confirmed=true), không hỏi lại vòng nữa."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Đăng bản tin 'AI hôm nay: OpenAI ra mắt model mới' lên Telegram giúp mình"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn có chắc muốn đăng bản tin 'AI hôm nay: OpenAI ra mắt model mới' lên Telegram không?"
+        },
+        {
+          "role": "user",
+          "content": "Có, gửi đi"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "send",
+            "args": {
+              "confirmed": true
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "send",
+            "args": {
+              "text": "AI hôm nay: OpenAI ra mắt model mới",
+              "confirmed": true
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "send",
+          "args": {
+            "text": "AI hôm nay: OpenAI ra mắt model mới",
+            "confirmed": true
+          },
+          "result": {
+            "tool": "send_telegram",
+            "error": "RuntimeError",
+            "message": "Missing TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID env var"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G10_rss_correction_limit",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_correction_rss_limit",
+        "difficulty": "easy",
+        "what_it_tests": "Giữ feed_url từ lượt trước, áp dụng số lượng mới ở lượt sau (limit=3)."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Đọc feed https://hnrss.org/frontpage giúp mình"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ lấy 3 bài thôi"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "rss",
+            "args": {
+              "feed_url": "https://hnrss.org/frontpage",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "rss",
+            "args": {
+              "feed_url": "https://hnrss.org/frontpage",
+              "limit": 3
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "rss",
+          "args": {
+            "feed_url": "https://hnrss.org/frontpage",
+            "limit": 3
+          },
+          "result": {
+            "tool": "read_rss",
+            "feed_url": "https://hnrss.org/frontpage",
+            "items": [
+              {
+                "title": "CoreWeave bond yield tops 16% as AI credit stress rises",
+                "url": "https://www.cnbc.com/2026/11/06/coreweave-bond-yield-tops-16percent-as-ai-credit-stress-rises.html",
+                "summary": "Article URL: https://www.cnbc.com/2026/11/06/coreweave-bond-yield-tops-16percent-as-ai-credit-stress-rises.html\nComments URL: https://news.ycombinator.com/item?id=50435660\nPoints: 42\n# Comments: 9",
+                "published": "Tue, 10 Nov 2026 03:20:06 +0000",
+                "source": "cnbc.com"
+              },
+              {
+                "title": "Locating the source of a mysterious beep",
+                "url": "https://simonwillison.net/2026/Nov/9/mysterious-beeps/",
+                "summary": "Article URL: https://simonwillison.net/2026/Nov/9/mysterious-beeps/\nComments URL: https://news.ycombinator.com/item?id=50434310\nPoints: 52\n# Comments: 29",
+                "published": "Tue, 10 Nov 2026 00:10:46 +0000",
+                "source": "simonwillison.net"
+              },
+              {
+                "title": "Horible public key tricks",
+                "url": "https://maurycyz.com/projects/badcert/",
+                "summary": "Article URL: https://maurycyz.com/projects/badcert/\nComments URL: https://news.ycombinator.com/item?id=50434264\nPoints: 64\n# Comments: 30",
+                "published": "Tue, 10 Nov 2026 00:07:17 +0000",
+                "source": "maurycyz.com"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G11_missing_feed_url",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "missing_info_generic_source",
+        "difficulty": "medium",
+        "what_it_tests": "Nói 'feed' nhưng không có URL → clarify xin URL, KHÔNG tự đoán feed (lỗi phát hiện khi chat live v6: agent tự chọn news.ycombinator.com/rss)."
+      },
+      "input": "Tóm tắt 3 bài mới nhất từ feed giúp mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn có thể cung cấp URL của feed mà bạn muốn tóm tắt không?",
+              "response_type": "text"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn có thể cung cấp URL của feed mà bạn muốn tóm tắt không?",
+            "response_type": "text"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn có thể cung cấp URL của feed mà bạn muốn tóm tắt không?",
+            "response_type": "text",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    }
+  ]
+}

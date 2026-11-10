@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Agent · K5-L3</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#f4f6f7;--card:#fff;--fg:#17212a;--muted:#5b6872;--line:#dbe1e5;--accent:#0f6e7a;--new:#2f8a4a;--new-bg:#e6f4ea;--warn:#a85d00;
+--f:"Be Vietnam Pro",system-ui,sans-serif;--m:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#11171b;--card:#192127;--fg:#e3e9ec;--muted:#97a4ad;--line:#2b353c;--accent:#4fb8c4;--new:#6cc488;--new-bg:#1a3123;--warn:#e3a74a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--f)}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 16px 48px;display:grid;gap:20px}
+h1{margin:0;font-size:2.1rem;line-height:1.15}
+h2{margin:0 0 10px;font-size:1.05rem;letter-spacing:.02em}
+.lead{font-size:1.08rem;max-width:70ch;margin:8px 0 0}
+.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;min-width:0}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.tool{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.88rem}
+.tool b{font-family:var(--m);font-size:.85rem}
+.tool.new{border-color:var(--new);background:var(--new-bg)}
+.tag{font-size:.7rem;font-weight:700;color:var(--new);margin-left:4px}
+ol{margin:0;padding-left:20px;display:grid;gap:6px}
+code{font-family:var(--m);font-size:.85em}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.metric{border-left:3px solid var(--accent);padding:4px 10px}
+.metric .n{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
+.metric .l{font-size:.8rem;color:var(--muted)}
+.rules li{margin-bottom:4px}
+.link{font-family:var(--m);background:var(--card);border:1px dashed var(--accent);border-radius:8px;padding:10px 14px;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Day 03 · K5-L3 · Nguyễn Thị Hồng San · openai / gpt-4o-mini</span>
+    <h1>Research Agent tiếng Việt</h1>
+    <p class="lead">Tìm tin trên web, tweet, Hacker News, Wikipedia, GitHub, RSS, arXiv và policy nội bộ, rồi tổng hợp thành bản tin. Thiếu thông tin thì hỏi lại; luôn xin xác nhận trước khi đăng Telegram.</p>
+  </header>
+
+  <div class="link">Thử ngay: <b>(dán link trycloudflare.com khi demo)</b></div>
+
+  <section class="card">
+    <h2>14 tool · 4 tool mới nhóm tự viết (không cần API key)</h2>
+    <div class="tools">
+      <div class="tool new"><b>wiki</b><span class="tag">MỚI</span><br>Wikipedia vi/en: khái niệm, tiểu sử</div>
+      <div class="tool new"><b>hn_search</b><span class="tag">MỚI</span><br>Story Hacker News, nổi bật hoặc mới nhất</div>
+      <div class="tool new"><b>github_repo</b><span class="tag">MỚI</span><br>Sao, fork, license, lần push của repo</div>
+      <div class="tool new"><b>rss</b><span class="tag">MỚI</span><br>Bài mới nhất từ RSS/Atom feed</div>
+      <div class="tool"><b>lookup</b><br>Tìm tin trên web (news, timeframe)</div>
+      <div class="tool"><b>timeline</b><br>Tweet của một tài khoản</div>
+      <div class="tool"><b>social_search</b><br>Tweet theo chủ đề (Top/Latest)</div>
+      <div class="tool"><b>fetch</b><br>Đọc một URL</div>
+      <div class="tool"><b>papers · paper_text</b><br>Tìm và đọc paper arXiv</div>
+      <div class="tool"><b>policy</b><br>Quy định nội bộ công ty</div>
+      <div class="tool"><b>format</b><br>Trình bày thành digest markdown</div>
+      <div class="tool"><b>clarify · send</b><br>Hỏi lại · đăng Telegram sau khi xác nhận</div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Câu hỏi mẫu để thử</h2>
+      <ol>
+        <li><code>Transformer trong machine learning là gì? Tra Wikipedia giúp mình.</code></li>
+        <li><code>Dân dev trên Hacker News đang bàn gì về AI agents? Lấy 3 bài nổi bật</code></li>
+        <li><code>Repo pytorch/pytorch có bao nhiêu sao, license gì?</code></li>
+        <li><code>Repo này còn được maintain không?</code> → agent hỏi lại tên repo</li>
+        <li><code>Đăng bản tin AI hôm nay lên Telegram</code> → agent xin xác nhận trước</li>
+      </ol>
+    </section>
+    <section class="card">
+      <h2>Kết quả eval (v0 → v9)</h2>
+      <div class="metrics">
+        <div class="metric"><div class="n">0.70 → 1.00</div><div class="l">base, 20 case</div></div>
+        <div class="metric"><div class="n">0.60 → 1.00</div><div class="l">extension, 10 case</div></div>
+        <div class="metric"><div class="n">11 / 12</div><div class="l">group, 12 case nhóm viết</div></div>
+        <div class="metric"><div class="n">115 / 115</div><div class="l">pytest pass, 0 skip</div></div>
+      </div>
+      <ul class="rules">
+        <li>Không đoán: thiếu handle/URL/repo thì hỏi lại.</li>
+        <li>Không gửi khi chưa xác nhận, kể cả khi user ép "khỏi hỏi".</li>
+        <li>Ngoài phạm vi (toán, code) thì từ chối lịch sự.</li>
+        <li>4 bug thật trong tool có sẵn được unit test bắt và sửa.</li>
+      </ul>
+    </section>
+  </div>
+</div>
+</body>
+</html>

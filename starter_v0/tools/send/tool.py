@@ -9,7 +9,9 @@ from tools._shared import TIMEOUT, err
 
 
 def send_telegram(text: str = "", confirmed: bool = False) -> dict[str, Any]:
-    if not confirmed:
+    # Only a real boolean True (or the literal string "true") counts as confirmation:
+    # bool("false") is True, so a plain truthiness check would send on confirmed="false".
+    if not (confirmed is True or (isinstance(confirmed, str) and confirmed.strip().lower() == "true")):
         return {
             "tool": "send_telegram",
             "status": "needs_confirmation",
