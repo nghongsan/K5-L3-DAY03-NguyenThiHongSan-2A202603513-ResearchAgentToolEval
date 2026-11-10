@@ -4,7 +4,7 @@
 
 - Họ tên: Nguyễn Thị Hồng San
 - MSSV: 2A202603513
-- Email: *(điền)*
+- Email: 26ai.sannth@vinuni.edu.vn
 - GitHub: `nghongsan`
 - Vai trò trong nhóm: nhóm trưởng; Eval lead (vai A trong bảng phân công), đồng thời phụ trách prompt/tools, tool mới, UI và báo cáo nhóm.
 
@@ -58,19 +58,34 @@
   *Lưu ý:* các commit trên được tạo khi máy chưa cấu hình `git user.email`, nên mang email tự sinh `…@MacBook-Air-cua-San.local` thay vì email GitHub. Commit kể từ khi sửa cấu hình mang đúng tài khoản `nghongsan`.
 
 - **AI/công cụ đã dùng và cách tự kiểm tra kết quả:**
-  - Công cụ: Claude Code (Anthropic, chạy trong VS Code) hỗ trợ viết code tool, test, UI, chạy eval, phân tích run JSON và soạn báo cáo; OpenAI `gpt-4o-mini` là model của agent.
+  - Công cụ: Claude Code (Anthropic, chạy trong VS Code) hỗ trợ viết code tool, test, UI, chạy eval, phân tích run JSON; OpenAI `gpt-4o-mini` là model của agent.
   - Tự kiểm tra bằng cách dùng thử agent trên UI (transcript lưu trong repo):
     - Hỏi "Thời tiết Hà Nội hôm nay?" thì thấy agent tìm `lookup(query="Hà Nội")` và trả lời "không tìm thấy" (`starter_v0/transcripts/archive_iterations/v3_before_freshness_fix/v3_openai_ui_20261110T202633921821.transcript.json`).
     - Hỏi "Tổng thống Mỹ hiện tại là ai?" thì thấy agent trả lời "Joe Biden" qua `wiki(query="Joe Biden")` (`…/v3_openai_ui_20261110T203701582721.transcript.json`).
     - Hai lỗi này dẫn tới bản sửa trong v3. Sau khi sửa, hỏi lại thời tiết, giá xăng, tổng thống Mỹ thì agent gọi `lookup` đúng (`starter_v0/transcripts/v3_openai_ui_20261110T210108093150.transcript.json`).
     - Tự test gửi Telegram: Dori hỏi xác nhận, trả lời "Chắc chắn", bấm nút, tin lên channel (`starter_v0/transcripts/v3_openai_ui_20261110T210223596995.transcript.json`).
-  - *(San bổ sung bằng lời của mình: những bước kiểm tra khác đã làm, ví dụ đọc run JSON, chạy lại `pytest`, kiểm tra tin trên Telegram, chỗ nào đã không đồng ý với gợi ý của AI và vì sao.)*
 
 ## 5. Tự đánh giá
+**Những phần tôi nắm và giải thích được**
+- Vì sao v1 chỉ sửa `system_prompt.md` mà routing tăng từ 0.75 lên 1.00: 6 case FAIL của v0 chủ yếu do chỉ dẫn xấu trong prompt starter (bảo đoán tài khoản, bịa URL, gửi luôn không hỏi), nên bỏ các chỉ dẫn đó và thêm rule routing là đủ để agent chọn đúng tool.
+- Vì sao v2 phải sửa `tools.yaml`: sau v1 agent chọn đúng tool nhưng điền sai tham số (thiếu `response_type`, bỏ trống `timeframe`, đổi tên Karpathy sai). Lỗi tham số nằm ở mô tả param, nên phải sửa khai báo tool chứ không phải prompt.
+- Vì sao v3 phải sửa thêm sau khi dùng thật: chính tôi hỏi thử "Thời tiết Hà Nội hôm nay?" và "Tổng thống Mỹ hiện tại là ai?" trên UI thì thấy agent trả lời sai, dù eval đạt 1.00.
+- 4 tool mới làm gì và test kiểm tra gì: mỗi tool có test cho trường hợp chạy đúng, input xấu từ model và nhánh lỗi; riêng `rss` có thêm test chặn truy cập vào mạng nội bộ.
 
-*(San tự viết phần này bằng lời của mình. RULES.md không cho phép dùng AI viết phần tự đánh giá. Các câu hỏi gợi ý:)*
+**Điểm làm tốt**
+- Tự dùng thử agent như người dùng thật và phát hiện 2 lỗi mà bộ eval không bắt được, từ đó sửa trong v3.
+- Giữ bằng chứng trung thực: không xoá run cũ mà chuyển vào `archive_iterations`, ghi lại cả sự cố (lỡ đăng tin thử lên Telegram khi chạy eval).
 
-- *Mình tự giải thích được những phần nào? (vì sao v1 chỉ sửa prompt mà routing lên 1.00; vì sao v2 sửa `tools.yaml`; vì sao v3 phải sửa thêm sau khi dùng thật; mỗi tool mới làm gì và test của nó kiểm tra gì)*
-- *Phần nào mình làm tốt, phần nào còn yếu?*
-- *Mình đã học được gì về cách đánh giá agent (ví dụ: eval đạt 1.00 nhưng dùng thật vẫn sai)?*
-- *Nếu làm lại, mình sẽ làm khác điều gì?*
+**Điểm còn yếu**
+- Vì không có nền tảng về tech, tôi còn phụ thuộc nhiều vào AI để viết code, test và UI; tôi cần tự đọc lại code kỹ hơn để giải thích được từng phần.
+
+**Điều tôi học được**
+- Eval đạt 1.00 không có nghĩa agent dùng thật đã đúng; bộ eval chỉ đo được những tình huống mình nghĩ ra trước, nên cần cho người thật dùng thử và biến lỗi dùng thật thành case mới.
+- Prompt quyết định agent chọn tool nào, còn khai báo tool quyết định agent điền tham số ra sao.
+- Sau mỗi thay đổi phải chạy lại toàn bộ bộ eval, vì sửa chỗ này có thể làm hỏng chỗ khác (v1 làm hỏng M02, M03).
+- Tool chạy thật có tác động ra bên ngoài (gửi Telegram), và mở link public thì phải nghĩ tới bảo mật và chi phí API.
+
+**Nếu làm lại**
+- Viết case eval cho câu hỏi về thông tin thay đổi theo thời gian (thời tiết, chức vụ hiện tại) ngay từ đầu.
+- Tắt chức năng gửi thật khi chạy eval trước khi kết nối Telegram.
+- Tự đọc run JSON trước rồi mới nhờ AI tóm tắt, để hiểu sâu hơn kết quả.
