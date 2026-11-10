@@ -89,6 +89,41 @@ Ghi chú vận hành: v2 có 2 lần chạy bị mất mạng (8/20 và 20/20 `A
 | v9 extension | 1.00 | 1.00 | 1.00 | – |
 | v9 group (12) | 0.9167 | 0.9167 | 0.9167 | 0.8333 |
 
+### So sánh chi tiết v0 → v1
+
+**Chỉ đổi `system_prompt.md`**: `tools.yaml` giữ nguyên (tools_hash `8db0ba629f52` ở cả hai). Model `openai/gpt-4o-mini`, bộ base 20 case.
+
+| | v0 (baseline starter) | v1 |
+|---|---|---|
+| artifact_version | `v0+pf0c107a9d7a1+t8db0ba629f52` | `v1+p4a729f827685+t8db0ba629f52` |
+| Thiếu thông tin (handle, URL…) | *"just make a sensible guess"*, *"pick a well-known account like Sam Altman"*, *"assume a likely URL"* | Không đoán: gọi `clarify` hỏi đúng phần còn thiếu |
+| Gửi/đăng | *"just go ahead and do it"* | Hỏi xác nhận (`clarify` yes_no) trước, chỉ `send` sau khi user đồng ý |
+| Số bước | *"Always finish in a single step. Pick one tool"* | Được gọi nhiều tool khi request cần nhiều nguồn |
+
+**Metric (base):**
+
+| | case | routing | args | multiturn | passed |
+|---|---:|---:|---:|---:|---:|
+| v0 | 0.70 | 0.75 | 0.70 | 1.00 | 14/20 |
+| v1 | **0.8947** | **1.00** | **0.8947** | 1.00 | 17/19 ¹ |
+
+**Thay đổi theo từng case:**
+
+| Case | v0 | v1 | Kết quả |
+|---|---|---|---|
+| R10_missing_handle | `timeline(screenname="sama")`: đoán Sam Altman | `clarify("…tài khoản nào?", text)` | ✅ fail → pass |
+| R13_parallel_web_and_tweets | `lookup(query="AI news")` thiếu `topic="news"` | `lookup(query="AI", topic="news")` + `social_search` | ✅ fail → pass |
+| R08_out_of_scope | Dùng `send` để gửi lời giải toán | Không gọi tool | ✅ fail → pass ² |
+| R14_out_of_scope_coding | Dùng `send` để gửi code Fibonacci | Không gọi tool | ✅ fail → pass ² |
+| R11_missing_url | `fetch(url="https://example.com/article")`: bịa URL | `clarify(...)` nhưng **thiếu `response_type`** | ❌ vẫn fail (lỗi đổi từ đoán sang thiếu arg), sửa ở v2 |
+| R12_confirm_before_send | `send(...)` luôn, không hỏi | `clarify(response_type="text")` xin nội dung thay vì xin xác nhận | ❌ vẫn fail (không còn gửi bừa nhưng hỏi sai kiểu), sửa ở v2 |
+| M04_clarify_then_url | pass | `APITimeoutError` | ⚪ lỗi provider, không tính |
+
+**Cải tiến chính của v1:** agent không còn tự bịa dữ liệu (handle, URL) và không còn gửi Telegram khi chưa hỏi, nên routing đạt 1.00. Hai lỗi còn lại đều là **chọn đúng tool nhưng sai/thiếu args của `clarify`**. Loại lỗi này không sửa được bằng prompt chung, nên v2 sửa trực tiếp khai báo `clarify` trong `tools.yaml` (base đạt 1.00).
+
+¹ M04 bị provider timeout nên không tính, mẫu số là 19.
+² Eval chỉ kiểm tra "không gọi tool". Đọc `actual_text` thì thấy v1 vẫn tự giải toán và viết code. Lỗi này được phát hiện khi chat live và sửa ở v9 (rule Scope).
+
 ## B2. Failure Analysis
 
 Lỗi thật lấy từ `results[*].result.failures`.

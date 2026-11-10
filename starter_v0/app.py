@@ -23,31 +23,58 @@ from tools import load_tool_declarations, to_openai_tools
 from versioning import artifact_version_dict, build_artifact_version
 
 PROVIDER = os.getenv("APP_PROVIDER", "openai")
-VERSION = os.getenv("APP_VERSION", "v6")
+VERSION = os.getenv("APP_VERSION", "v9")
 MODEL = os.getenv("APP_MODEL") or None
 HISTORY_WINDOW = 5
 MAX_TOOL_ROUNDS = 4
 
+# (question, tool it needs or None)
 SAMPLE_QUESTIONS = [
-    "Tin tức AI hôm nay có gì nổi bật?",
-    "Lấy 3 tweet mới nhất của Andrej Karpathy",
-    "Transformer trong machine learning là gì? Tra Wikipedia giúp mình.",
-    "Dân dev trên Hacker News đang bàn gì về Rust? Lấy bài mới nhất.",
-    "Repo langchain-ai/langchain có bao nhiêu sao, license gì?",
-    "Theo policy công ty, đăng bản tin lên Telegram có cần xác nhận trước không?",
-    "Đăng bản tin AI hôm nay lên Telegram giúp mình",
+    ("Tin tức AI hôm nay có gì nổi bật?", "lookup"),
+    ("Lấy 3 tweet mới nhất của Andrej Karpathy", "timeline"),
+    ("Transformer trong machine learning là gì? Tra Wikipedia giúp mình.", None),
+    ("Dân dev trên Hacker News đang bàn gì về Rust? Lấy bài mới nhất.", None),
+    ("Repo langchain-ai/langchain có bao nhiêu sao, license gì?", None),
+    ("Theo policy công ty, đăng bản tin lên Telegram có cần xác nhận trước không?", None),
+    ("Đăng bản tin AI hôm nay lên Telegram giúp mình", "send"),
 ]
 
 st.set_page_config(page_title="Research Agent", page_icon="🔎", layout="wide")
+
+TOOLS_DIR = ROOT / "tools"
+
+
+def missing_env(tool_name: str) -> list[str]:
+    """Env vars listed in tools/<name>/TOOL.md `requires_env` that are unset or empty."""
+    doc = TOOLS_DIR / tool_name / "TOOL.md"
+    if not doc.exists():
+        return []
+    for line in doc.read_text(encoding="utf-8").splitlines():
+        if line.startswith("requires_env:"):
+            names = line.split(":", 1)[1].strip().strip("[]")
+            return [n.strip() for n in names.split(",") if n.strip() and not os.getenv(n.strip())]
+    return []
 
 
 @st.cache_resource
 def load_runtime() -> dict:
     prompt_path = ARTIFACTS_DIR / "system_prompt.md"
     tools_path = ARTIFACTS_DIR / "tools.yaml"
-    declarations = load_tool_declarations(tools_path)
+    all_declarations = load_tool_declarations(tools_path)
+    # Basic demo: hide tools whose API keys are not configured, so the agent never calls them.
+    disabled = {d["name"]: missing_env(d["name"]) for d in all_declarations}
+    disabled = {name: envs for name, envs in disabled.items() if envs}
+    declarations = [d for d in all_declarations if d["name"] not in disabled]
+    system_prompt = prompt_path.read_text(encoding="utf-8")
+    if disabled:
+        system_prompt += (
+            "\n\n## Demo mode\nCác tool sau KHÔNG khả dụng trong bản demo này (chưa cấu hình API key): "
+            + ", ".join(sorted(disabled))
+            + ". Nếu người dùng yêu cầu chức năng của chúng, hãy nói rõ là bản demo chưa hỗ trợ và gợi ý việc khác.\n"
+        )
     return {
-        "system_prompt": prompt_path.read_text(encoding="utf-8"),
+        "system_prompt": system_prompt,
+        "disabled": disabled,
         "declarations": declarations,
         "tools": to_openai_tools(declarations),
         "provider": make_provider(PROVIDER),
@@ -104,12 +131,18 @@ with st.sidebar:
         "Hacker News, GitHub repo và policy nội bộ. Hỏi lại khi thiếu thông tin; luôn xin xác nhận trước khi gửi Telegram."
     )
     st.subheader("Thử nhanh")
-    for question in SAMPLE_QUESTIONS:
+    for question, needs in SAMPLE_QUESTIONS:
+        if needs in runtime["disabled"]:
+            continue
         if st.button(question, use_container_width=True):
             st.session_state.pending = question
     st.subheader("Tool")
     for item in runtime["declarations"]:
         st.markdown(f"- **{item['name']}**: {item['description'].split('.')[0]}.")
+    if runtime["disabled"]:
+        st.caption("Tắt trong demo (thiếu key): " + ", ".join(
+            f"`{name}` ({', '.join(envs)})" for name, envs in sorted(runtime["disabled"].items())
+        ))
     if st.button("Cuộc trò chuyện mới", type="secondary"):
         reset_session(runtime)
         st.rerun()
