@@ -37,8 +37,9 @@ MAX_TOOL_ROUNDS = 4
 TRANSCRIPTS_DIR = ROOT / "transcripts"
 TOOLS_DIR = ROOT / "tools"
 
-BOT_AVATAR = "🐰"
-USER_AVATAR = "🌸"
+ASSETS_DIR = ROOT / "assets"
+BOT_AVATAR = str(ASSETS_DIR / "dori-avatar.png")
+USER_AVATAR = "🙂"
 
 # Icon + short label for every tool (sidebar chips and tool-call rows).
 TOOL_STYLE = {
@@ -71,75 +72,78 @@ SAMPLE_QUESTIONS = [
     ("📄", "Tìm các bài báo arXiv mới về đánh giá AI agent.", "papers"),
 ]
 
-st.set_page_config(page_title=APP_NAME, page_icon="🐰", layout="wide", initial_sidebar_state="auto")
+st.set_page_config(page_title=APP_NAME, page_icon=str(ROOT / "assets" / "dori-icon.png"), layout="wide", initial_sidebar_state="auto")
 
 CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap');
 
+/* Palette sampled from the Dori mascot: periwinkle beret/book, navy outline, blush cheeks, star yellow. */
 :root{
-  --pink:#ff7eb3; --pink-deep:#d94a86; --pink-soft:#ffe3ee; --pink-mist:#fff6f9;
-  --lav:#c9b6ff; --lav-soft:#f1ebff; --mint:#bdf0dc; --mint-soft:#effcf6; --peach-soft:#fff1e8;
-  --ink:#4f3446; --ink-soft:#8d6c80; --plum:#7a2e5a; --white:#ffffff;
-  --shadow:0 10px 30px -14px rgba(217,74,134,.35);
+  --blue:#7d93dc; --blue-deep:#5b6fbf; --blue-soft:#e6ebfb; --blue-mist:#f6f8ff; --sky:#cdd8fa;
+  --navy:#3d4673; --navy-soft:#727ba4; --blush:#f2a7b0; --blush-soft:#fdeef0;
+  --sun:#f5cf62; --sun-soft:#fff6dc; --white:#ffffff;
+  --shadow:0 10px 30px -14px rgba(91,111,191,.35);
 }
 
 html, body, .stApp, .stMarkdown, button, input, textarea { font-family:'Nunito', system-ui, sans-serif !important; }
 .stApp{
-  color:var(--ink);
+  color:var(--navy);
   background:
-    radial-gradient(circle at 10% 14%, rgba(255,126,179,.14) 0 120px, transparent 121px),
-    radial-gradient(circle at 92% 6%, rgba(201,182,255,.22) 0 170px, transparent 171px),
-    radial-gradient(circle at 95% 88%, rgba(189,240,220,.28) 0 150px, transparent 151px),
-    radial-gradient(rgba(255,126,179,.09) 1.5px, transparent 1.6px) 0 0/22px 22px,
-    linear-gradient(180deg, var(--pink-mist), #fbf7ff);
+    radial-gradient(circle at 8% 12%, rgba(125,147,220,.13) 0 130px, transparent 131px),
+    radial-gradient(circle at 93% 6%, rgba(205,216,250,.45) 0 170px, transparent 171px),
+    radial-gradient(circle at 96% 90%, rgba(245,207,98,.16) 0 140px, transparent 141px),
+    radial-gradient(rgba(125,147,220,.10) 1.5px, transparent 1.6px) 0 0/24px 24px,
+    linear-gradient(180deg, var(--blue-mist), #fbfcff);
 }
 header[data-testid="stHeader"]{background:transparent}
 .block-container{padding-top:1.4rem; max-width:960px}
 
 /* ---------- hero ---------- */
 .dori-hero{
-  position:relative; overflow:hidden; border-radius:26px; padding:24px 28px;
-  background:linear-gradient(120deg, #ffcadf 0%, #f3d1ff 55%, #d3ecff 100%);
-  box-shadow:var(--shadow); border:3px solid var(--white);
-  display:flex; gap:20px; align-items:center; margin-bottom:22px;
+  position:relative; overflow:hidden; border-radius:26px; padding:20px 28px 20px 20px;
+  background:linear-gradient(120deg, #ffffff 0%, #eef2ff 45%, #e2e9fd 100%);
+  box-shadow:var(--shadow); border:2px solid var(--sky);
+  display:flex; gap:18px; align-items:center; margin-bottom:22px;
 }
-.dori-hero .bunny{font-size:60px; line-height:1; flex:none; filter:drop-shadow(0 6px 8px rgba(217,74,134,.22)); animation:bob 3.4s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
-@media (prefers-reduced-motion: reduce){.dori-hero .bunny{animation:none}}
-.dori-hero h1{font-family:'Baloo 2','Nunito',sans-serif !important; font-weight:800; font-size:2.3rem; margin:0; line-height:1.05; color:var(--plum); padding:0}
-.dori-hero p{margin:6px 0 0; font-size:1rem; color:#5e3a52; max-width:62ch; line-height:1.5}
-.dori-hero .sparkle{position:absolute; font-size:20px; opacity:.8}
-.dori-hero .s1{top:12px; right:22px} .dori-hero .s2{bottom:14px; right:96px; font-size:15px}
-.dori-hero.compact{padding:12px 20px; gap:14px; margin-bottom:16px; border-radius:20px}
-.dori-hero.compact .bunny{font-size:34px}
+.dori-hero .logo{width:118px; height:118px; flex:none; border-radius:28px; background:var(--white);
+  box-shadow:0 8px 18px -10px rgba(91,111,191,.55); animation:bob 3.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media (prefers-reduced-motion: reduce){.dori-hero .logo{animation:none}}
+.dori-hero h1{font-family:'Baloo 2','Nunito',sans-serif !important; font-weight:800; font-size:2.3rem; margin:0; line-height:1.05; color:var(--navy); padding:0}
+.dori-hero h1 span{color:var(--blue-deep)}
+.dori-hero p{margin:6px 0 0; font-size:1rem; color:#4c5583; max-width:62ch; line-height:1.5}
+.dori-hero .sparkle{position:absolute; font-size:18px; color:var(--blue); opacity:.75}
+.dori-hero .s1{top:12px; right:22px} .dori-hero .s2{bottom:14px; right:90px; color:var(--sun); font-size:20px; opacity:.95}
+.pill-row{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+.pill{background:var(--white); border:1.5px solid var(--sky); border-radius:999px; padding:3px 11px; font-size:.8rem; font-weight:700; color:var(--blue-deep)}
+.dori-hero.compact{padding:10px 20px 10px 12px; gap:12px; margin-bottom:16px; border-radius:20px}
+.dori-hero.compact .logo{width:52px; height:52px; border-radius:16px; animation:none}
 .dori-hero.compact h1{font-size:1.45rem}
 .dori-hero.compact p{margin-top:0; font-size:.88rem}
 .dori-hero.compact .s2{display:none}
-.pill-row{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
-.pill{background:rgba(255,255,255,.78); border-radius:999px; padding:3px 11px; font-size:.8rem; font-weight:700; color:var(--plum)}
 @media (max-width: 640px){
-  .dori-hero{flex-direction:column; align-items:flex-start; gap:8px; padding:20px 18px}
-  .dori-hero .bunny{font-size:46px}
+  .dori-hero{flex-direction:column; align-items:flex-start; gap:10px; padding:18px}
+  .dori-hero .logo{width:84px; height:84px; border-radius:22px}
   .dori-hero h1{font-size:1.85rem}
+  .dori-hero.compact{flex-direction:row; align-items:center}
 }
 
 /* ---------- welcome ---------- */
-.welcome-title{font-family:'Baloo 2',sans-serif !important; font-weight:700; font-size:1.25rem; color:var(--plum); margin:0}
-.welcome-sub{color:var(--ink-soft); margin:2px 0 12px}
+.welcome-title{font-family:'Baloo 2',sans-serif !important; font-weight:700; font-size:1.25rem; color:var(--navy); margin:0}
+.welcome-sub{color:var(--navy-soft); margin:2px 0 12px}
 
-/* ---------- buttons: base ---------- */
+/* ---------- buttons ---------- */
 .stButton button{
-  border-radius:16px !important; border:2px solid var(--pink-soft) !important;
-  background:var(--white) !important; color:var(--ink) !important; font-weight:700 !important;
-  box-shadow:0 4px 14px -9px rgba(217,74,134,.45); transition:transform .15s, border-color .15s, background .15s;
+  border-radius:16px !important; border:2px solid var(--blue-soft) !important;
+  background:var(--white) !important; color:var(--navy) !important; font-weight:700 !important;
+  box-shadow:0 4px 14px -10px rgba(91,111,191,.5); transition:transform .15s, border-color .15s, background .15s;
 }
-.stButton button:hover{transform:translateY(-1px); border-color:var(--pink) !important; background:var(--pink-mist) !important}
-.stButton button:focus-visible{outline:3px solid var(--lav) !important; outline-offset:2px}
-.stButton button[kind="primary"]{background:var(--pink) !important; border-color:var(--pink) !important; color:var(--white) !important}
-.stButton button[kind="primary"]:hover{background:var(--pink-deep) !important; border-color:var(--pink-deep) !important}
+.stButton button:hover{transform:translateY(-1px); border-color:var(--blue) !important; background:var(--blue-mist) !important}
+.stButton button:focus-visible{outline:3px solid var(--sun) !important; outline-offset:2px}
+.stButton button[kind="primary"]{background:var(--blue) !important; border-color:var(--blue) !important; color:var(--white) !important}
+.stButton button[kind="primary"]:hover{background:var(--blue-deep) !important; border-color:var(--blue-deep) !important}
 
-/* sample cards: left-aligned, equal height */
 .st-key-samples .stButton button{
   width:100%; min-height:4.6rem; padding:.75rem 1rem !important;
   justify-content:flex-start !important; align-items:center !important; text-align:left !important;
@@ -147,49 +151,61 @@ header[data-testid="stHeader"]{background:transparent}
 .st-key-samples .stButton button > div, .st-key-samples .stButton [data-testid="stMarkdownContainer"]{width:100%; justify-content:flex-start !important}
 .st-key-samples .stButton p{white-space:normal !important; text-align:left !important; line-height:1.4 !important; margin:0}
 
-/* history list: compact, left aligned, ellipsis */
 .st-key-history .stButton button{
   width:100%; min-height:0; padding:.45rem .75rem !important; border-radius:12px !important;
   border-width:1.5px !important; box-shadow:none; justify-content:flex-start !important; font-weight:600 !important;
 }
 .st-key-history .stButton button > div, .st-key-history [data-testid="stMarkdownContainer"]{width:100%; justify-content:flex-start !important; min-width:0}
 .st-key-history .stButton p{white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; text-align:left !important; margin:0; font-size:.88rem}
-.st-key-history .stButton button[kind="primary"]{background:var(--white) !important; color:var(--plum) !important; border-color:var(--pink) !important; box-shadow:inset 3px 0 0 var(--pink)}
+.st-key-history .stButton button[kind="primary"]{background:var(--white) !important; color:var(--navy) !important; border-color:var(--blue) !important; box-shadow:inset 3px 0 0 var(--blue)}
 
 /* ---------- chat ---------- */
 [data-testid="stChatMessage"]{
   background:var(--white); border-radius:22px; padding:14px 18px; margin-bottom:12px;
-  border:2px solid var(--pink-soft); box-shadow:0 8px 22px -18px rgba(217,74,134,.6);
+  border:2px solid var(--blue-soft); box-shadow:0 8px 22px -18px rgba(91,111,191,.6);
 }
-[data-testid="stChatMessageAvatarCustom"]{background:var(--pink-soft) !important; border-radius:50% !important}
-[data-testid="stChatInput"]{border-radius:20px !important; border:2px solid var(--pink) !important; background:var(--white) !important; box-shadow:var(--shadow)}
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarCustom"] img){background:var(--white)}
+[data-testid="stChatMessage"]:not(:has(img)){background:var(--blue-soft); border-color:var(--sky)}
+[data-testid="stChatMessageAvatarCustom"]{background:var(--sun-soft) !important; border-radius:50% !important}
+[data-testid="stChatMessage"] img{border-radius:50%}
+[data-testid="stChatInput"]{border-radius:20px !important; border:2px solid var(--blue) !important; background:var(--white) !important; box-shadow:var(--shadow)}
 [data-testid="stBottom"] > div{background:transparent !important}
-[data-testid="stBottomBlockContainer"]{background:linear-gradient(180deg, transparent, var(--pink-mist) 45%) !important}
-.awaiting{display:inline-flex; align-items:center; gap:6px; background:var(--lav-soft); color:#5c4596; border-radius:999px;
+[data-testid="stBottomBlockContainer"]{background:linear-gradient(180deg, transparent, var(--blue-mist) 45%) !important}
+.awaiting{display:inline-flex; align-items:center; gap:6px; background:var(--blush-soft); color:#9a4a59; border-radius:999px;
   padding:2px 10px; font-size:.78rem; font-weight:800; margin-bottom:6px}
+.stApp a{color:var(--blue-deep)}
 
 /* tool-call rows */
-[data-testid="stExpander"] details{border-radius:14px !important; border:1.5px dashed var(--lav) !important; background:var(--lav-soft) !important}
-[data-testid="stExpander"] summary{font-weight:700; color:#5c4596 !important}
+[data-testid="stExpander"] details{border-radius:14px !important; border:1.5px dashed var(--sky) !important; background:var(--blue-mist) !important}
+[data-testid="stExpander"] summary{font-weight:700; color:var(--blue-deep) !important}
 
 /* ---------- sidebar ---------- */
-[data-testid="stSidebar"]{background:linear-gradient(180deg,#ffedf4,#f4eeff) !important; border-right:2px solid var(--white)}
-.side-brand{font-family:'Baloo 2',sans-serif !important; font-weight:800; font-size:1.45rem; color:var(--plum); margin:0 0 2px}
-.side-title{font-family:'Baloo 2',sans-serif !important; font-weight:700; font-size:1.02rem; color:var(--plum); margin:14px 0 6px}
+[data-testid="stSidebar"]{background:linear-gradient(180deg,#f4f7ff,#eceffd) !important; border-right:2px solid var(--white)}
+.side-brand{display:flex; align-items:center; gap:10px; margin:0 0 2px}
+.side-brand img{width:42px; height:42px; border-radius:12px; background:var(--white); box-shadow:0 4px 10px -6px rgba(91,111,191,.6)}
+.side-brand b{font-family:'Baloo 2',sans-serif !important; font-weight:800; font-size:1.4rem; color:var(--navy); line-height:1.1}
+.side-title{font-family:'Baloo 2',sans-serif !important; font-weight:700; font-size:1.02rem; color:var(--navy); margin:14px 0 6px}
 .chips{display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 6px}
-.chip{background:var(--white); border:1.5px solid var(--pink-soft); border-radius:999px; padding:3px 10px; font-size:.78rem; font-weight:700; color:var(--ink)}
-.chip.new{border-color:var(--mint); background:var(--mint-soft)}
-.chip.off{background:transparent; border-style:dashed; color:var(--ink-soft)}
-.tiny{font-size:.8rem; color:var(--ink-soft)}
-.empty-history{font-size:.85rem; color:var(--ink-soft); background:rgba(255,255,255,.6); border-radius:12px; padding:8px 10px}
-[data-testid="stSidebar"] [data-testid="stExpander"] details{background:rgba(255,255,255,.6) !important; border-style:solid !important; border-color:var(--pink-soft) !important}
-[data-testid="stSidebar"] [data-testid="stExpander"] summary{color:var(--plum) !important}
-.stSpinner > div{color:var(--plum) !important; font-weight:700}
+.chip{background:var(--white); border:1.5px solid var(--blue-soft); border-radius:999px; padding:3px 10px; font-size:.78rem; font-weight:700; color:var(--navy)}
+.chip.new{border-color:var(--sun); background:var(--sun-soft)}
+.chip.off{background:transparent; border-style:dashed; color:var(--navy-soft)}
+.tiny{font-size:.8rem; color:var(--navy-soft)}
+.empty-history{font-size:.85rem; color:var(--navy-soft); background:rgba(255,255,255,.7); border-radius:12px; padding:8px 10px}
+[data-testid="stSidebar"] [data-testid="stExpander"] details{background:rgba(255,255,255,.7) !important; border-style:solid !important; border-color:var(--blue-soft) !important}
+[data-testid="stSidebar"] [data-testid="stExpander"] summary{color:var(--navy) !important}
+.stSpinner > div{color:var(--blue-deep) !important; font-weight:700}
 </style>
 """
 
 
 # ---------------------------------------------------------------- runtime
+
+@st.cache_data
+def image_uri(name: str) -> str:
+    """Inline a file from assets/ as a data URI so it works through the tunnel without static serving."""
+    import base64
+    return "data:image/png;base64," + base64.b64encode((ASSETS_DIR / name).read_bytes()).decode()
+
 
 def missing_env(tool_name: str) -> list[str]:
     """Env vars listed in tools/<name>/TOOL.md `requires_env` that are unset or empty."""
@@ -355,7 +371,8 @@ if "display" not in st.session_state:
 st.markdown(CSS, unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown(f'<p class="side-brand">🐰 {APP_NAME}</p><span class="tiny">Trợ lý nghiên cứu tiếng Việt</span>', unsafe_allow_html=True)
+    st.markdown(f'<div class="side-brand"><img src="{image_uri("dori-avatar.png")}" alt="Dori"><div><b>{APP_NAME}</b><br>'
+                '<span class="tiny">Trợ lý nghiên cứu tiếng Việt</span></div></div>', unsafe_allow_html=True)
     if st.button("＋ Cuộc trò chuyện mới", type="primary", use_container_width=True):
         start_new_conversation(runtime, sid)
         st.rerun()
@@ -376,7 +393,7 @@ with st.sidebar:
 
     st.markdown('<p class="side-title">Công cụ khả dụng</p>', unsafe_allow_html=True)
     st.markdown(chips_html([d["name"] for d in runtime["declarations"]]), unsafe_allow_html=True)
-    st.markdown('<span class="tiny">Viền xanh: công cụ do nhóm phát triển</span>', unsafe_allow_html=True)
+    st.markdown('<span class="tiny">Viền vàng: công cụ do nhóm phát triển</span>', unsafe_allow_html=True)
     if runtime["disabled"]:
         with st.expander(f"Chưa kích hoạt ({len(runtime['disabled'])})"):
             st.markdown(chips_html(sorted(runtime["disabled"]), extra_class=" off"), unsafe_allow_html=True)
@@ -406,8 +423,9 @@ else:
     )
     hero_class = "dori-hero"
 st.markdown(
-    f'<div class="{hero_class}"><div class="bunny">🐰</div><div><h1>{APP_NAME}</h1>{hero_body}</div>'
-    '<span class="sparkle s1">✨</span><span class="sparkle s2">💗</span></div>',
+    f'<div class="{hero_class}"><img class="logo" src="{image_uri("dori.png")}" alt="Linh vật Dori">'
+    f'<div><h1>Dori <span>Research</span></h1>{hero_body}</div>'
+    '<span class="sparkle s1">✦</span><span class="sparkle s2">✦</span></div>',
     unsafe_allow_html=True,
 )
 
